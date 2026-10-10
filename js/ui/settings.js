@@ -5,8 +5,9 @@
 import { $, showScreen, confirmDialog, copyText } from './dom.js';
 import { fmtTime } from '../core/util.js';
 import { exportCode, importCode, defaultSave } from '../core/save.js';
+import { installedVersion, forceUpdate } from '../core/updates.js';
 
-export const VERSION = '1.0.0';
+export const VERSION = '2.0';
 
 function toggle(id, on) {
   return `<button class="toggle" id="${id}" role="switch" aria-checked="${on ? 'true' : 'false'}" aria-label="Activar"></button>`;
@@ -35,11 +36,25 @@ export function renderSettings(app) {
         <button class="btn small" id="stLoad">Cargar progreso</button>
         <p class="msg" id="stMsg" aria-live="polite"></p>
       </div>
+      <p class="group-title">Actualizaciones</p>
+      <div class="setting" style="grid-template-columns:1fr"><label>Versión instalada</label>
+        <small id="stBuild">Versión ${VERSION}</small>
+        <small>El juego se actualiza solo al abrirlo. Si no ves lo último (por ejemplo, las 12 naves), tocá el botón: baja el juego de nuevo sin borrar tu progreso.</small>
+        <button class="btn small" id="stUpdate">Actualizar el juego ahora</button>
+      </div>
       <button class="btn small" id="stReset">Borrar todo el progreso</button>
       <p class="hint">Tiempo jugado: ${fmtTime(app.save.stats.playTime)} · Partidas: ${app.save.stats.runs} · Versión ${VERSION}</p>
       <p class="hint">Hecho con HTML, CSS y JavaScript, sin librerías. Fuentes Bungee y Chakra Petch (licencia SIL OFL).</p>
     </div>`;
   $('stExport').value = exportCode(app.save);
+  installedVersion().then(v => { if (v && $('stBuild')) $('stBuild').textContent = `Versión ${VERSION} · copia ${v}`; });
+  $('stUpdate').onclick = () => {
+    app.sfx('click');
+    app.persist();
+    $('stUpdate').disabled = true;
+    $('stUpdate').textContent = 'Actualizando…';
+    forceUpdate();
+  };
   const vol = () => {
     st.sfx = +$('stSfx').value;
     st.music = +$('stMusic').value;

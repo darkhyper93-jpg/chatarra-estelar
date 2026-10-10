@@ -23,6 +23,7 @@ import { openChoice, renderPause, renderOver } from './ui/runscreens.js';
 import { renderHangar } from './ui/hangar.js';
 import { renderAchievements, renderCodex } from './ui/collection.js';
 import { renderSettings } from './ui/settings.js';
+import { setupUpdates, updatePending } from './core/updates.js';
 
 /* ------------------------------ estado ------------------------------ */
 
@@ -255,6 +256,8 @@ function endRun(quit) {
 }
 
 function toMenu() {
+  // Si se bajó una versión nueva durante la partida, se aplica ahora (el progreso ya está guardado).
+  if (updatePending()) { location.reload(); return; }
   state = 'menu';
   returnTo = 'menu';
   run = null;
@@ -398,8 +401,13 @@ resize();
 toMenu();
 requestAnimationFrame(frame);
 
-if ('serviceWorker' in navigator && location.protocol !== 'file:' && !TEST) {
-  addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+if (!TEST) {
+  // Después de una actualización forzada la dirección queda con ?u=...; la limpiamos.
+  if (params.has('u')) history.replaceState(null, '', location.pathname);
+  setupUpdates({
+    canReload: () => state === 'menu',
+    onPending: () => toast('Hay una versión nueva del juego: se instala al volver al menú.', 5000),
+  });
 }
 
 // Ganchos para las pruebas automáticas (sólo con ?test en la dirección).

@@ -104,10 +104,13 @@ const ALL_NEW = { lancero: 4, nodriza: 4, fantasma: 4, mortero: 4, divisor: 4, a
 const HAZARD_SETS = [null, 'hielo', 'escombros', 'esporas', 'rayos', 'gravedad', ['escombros', 'gravedad'], ['rayos', 'esporas'], ['llamaradas', 'rayos'], ['llamaradas', 'rayos', 'gravedad']];
 const SCALES = ['minor', 'dorian', 'phrygian', 'harmonic'];
 
-/** Arma una galaxia a partir de su nombre, color base y los nombres de sus 10 zonas. */
+/**
+ * Arma una galaxia a partir de su nombre, color base y los nombres de sus 10 zonas.
+ * `extra.pool` suma enemigos propios; `extra.fem` marca nombres femeninos («Nebulosa…») para los textos.
+ */
 function makeGalaxy(tier, id, name, hue, blurb, zoneNames, extra = {}) {
   return {
-    id, name, tier, blurb,     hp: GALAXY_CURVE[tier].hp, dmg: GALAXY_CURVE[tier].dmg, scrap: GALAXY_CURVE[tier].scrap,
+    id, name, tier, blurb, fem: !!extra.fem, hp: GALAXY_CURVE[tier].hp, dmg: GALAXY_CURVE[tier].dmg, scrap: GALAXY_CURVE[tier].scrap,
     suffix: BOSS_SUFFIX[tier], accent: hsl(hue, 85, 65),
     zones: zoneNames.map((zn, i) => ({
       id: id + '-' + (i + 1), name: zn, boss: BOSS_ORDER_IDS[i],
@@ -125,7 +128,7 @@ GALAXIES.push(
   makeGalaxy(4, 'solar', 'Desierto Solar', 42, 'Arena dorada, calor y llamaradas.', ['Dunas Doradas', 'Espejismo', 'Oasis Seco', 'Tormenta de Arena', 'Valle del Sol', 'Ruinas Áureas', 'Cráter Ardiente', 'Pirámide Rota', 'Horno Estelar', 'Ojo del Sol'], { pool: { mortero: 7, bombardero: 6 } }),
   makeGalaxy(5, 'glaciar', 'Glaciar Sideral', 195, 'Hielo eterno. Balas que se parten y muros congelados.', ['Grieta Helada', 'Campo de Escarcha', 'Aurora Boreal', 'Témpano Errante', 'Cueva de Cristal', 'Viento Polar', 'Lago Congelado', 'Cumbre Blanca', 'Tormenta de Nieve', 'Corona de Hielo'], { pool: { francotirador: 7, fantasma: 6 } }),
   makeGalaxy(6, 'mecanico', 'Reino Mecánico', 25, 'Fábricas que nunca paran de construir naves.', ['Engranajes', 'Fundición', 'Línea de Montaje', 'Red Eléctrica', 'Depósito', 'Cinta Transportadora', 'Sala de Máquinas', 'Torre de Control', 'Reactor', 'Mente Maestra'], { pool: { nodriza: 7, acorazado: 6, minador: 6 } }),
-  makeGalaxy(7, 'prisma', 'Nebulosa Prisma', 300, 'Luz partida en mil colores. Todo brilla, todo lastima.', ['Velo Violeta', 'Arcoíris Roto', 'Espejo Infinito', 'Prisma Partido', 'Luz Dispersa', 'Caleidoscopio', 'Rayo Índigo', 'Bruma Rosa', 'Cristal Vivo', 'Núcleo Prisma'], { pool: { lancero: 7, tejedor: 6 } }),
+  makeGalaxy(7, 'prisma', 'Nebulosa Prisma', 300, 'Luz partida en mil colores. Todo brilla, todo lastima.', ['Velo Violeta', 'Arcoíris Roto', 'Espejo Infinito', 'Prisma Partido', 'Luz Dispersa', 'Caleidoscopio', 'Rayo Índigo', 'Bruma Rosa', 'Cristal Vivo', 'Núcleo Prisma'], { pool: { lancero: 7, tejedor: 6 }, fem: true }),
   makeGalaxy(8, 'abismo', 'Abismo Sombrío', 350, 'Oscuridad casi total. Los fantasmas cazan en grupo.', ['Penumbra', 'Eclipse', 'Sombra Viva', 'Grieta Oscura', 'Valle del Silencio', 'Niebla Negra', 'Fosa Sin Fondo', 'Trono Oscuro', 'Eco del Vacío', 'Noche Eterna'], { pool: { fantasma: 8, divisor: 6 } }),
   makeGalaxy(9, 'final', 'Fin del Universo', 265, 'La última galaxia. Si la terminás, no queda nada por conquistar.', ['Última Frontera', 'Polvo Estelar', 'Muerte Térmica', 'Gran Colapso', 'Nebulosa Final', 'Estrellas Moribundas', 'Borde del Tiempo', 'Vacío Primordial', 'Puerta Cósmica', 'El Origen'], { pool: { acorazado: 7, nodriza: 6, divisor: 6, lancero: 6 } }),
 );

@@ -29,7 +29,7 @@ export const ACHIEVEMENTS = [
   { id: 'campana',      name: 'Cinturón liberado', desc: 'Completá la galaxia 1. Desbloquea la nave Fénix.', reward: 2000, cond: s => !!s.galaxies.cleared.cinturon },
   { id: 'galaxia2',     name: 'Nebulosa apagada', desc: 'Completá la galaxia 2. Desbloquea la nave Pulsar.', reward: 6000, cond: s => !!s.galaxies.cleared.carmesi },
   { id: 'galaxia3',     name: 'Más allá del vórtice', desc: 'Completá la galaxia 3. Desbloquea la nave Quimera.', reward: 15000, cond: s => !!s.galaxies.cleared.abisal },
-  ...GALAXIES.slice(3).map(g => ({ id: 'galaxia' + (g.tier + 1), name: g.name + ' conquistado', desc: 'Completá la galaxia ' + (g.tier + 1) + ': ' + g.name + '.', reward: Math.round(5000 * g.scrap), cond: s => !!s.galaxies.cleared[g.id] })),
+  ...GALAXIES.slice(3).map(g => ({ id: 'galaxia' + (g.tier + 1), name: g.name + (g.fem ? ' conquistada' : ' conquistado'), desc: 'Completá la galaxia ' + (g.tier + 1) + ': ' + g.name + '.', reward: Math.round(5000 * g.scrap), cond: s => !!s.galaxies.cleared[g.id] })),
   { id: 'conquistador', name: 'Conquistador del universo', desc: 'Completá las ' + GALAXIES.length + ' galaxias.', reward: 1000000, cond: s => GALAXIES.every(g => s.galaxies.cleared[g.id]) },
   { id: 'arbol',        name: 'Maestría',         desc: 'Completá el árbol de mejoras de una nave.',        reward: 3000, cond: s => Object.keys(TREES).some(id => treeLevels(s, id) >= treeMax(id)) },
   { id: 'sobrecarga',   name: 'Sobrecarga total', desc: 'Llevá la sobrecarga de un arma al máximo en una partida.', reward: 600, cond: (s, r) => !!r && (r.stats.maxOver || 0) >= 5 },

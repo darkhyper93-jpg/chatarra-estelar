@@ -13,6 +13,8 @@ Funciona en el navegador de cualquier celular o computadora y **se puede instala
 
 Queda un ícono como cualquier otra app; se abre en pantalla completa.
 
+**Actualizaciones:** el juego busca versiones nuevas cada vez que lo abrís o volvés a él, y se actualiza solo cuando estás en el menú (nunca en medio de una partida). Si alguna vez no ves lo último, andá a **Ajustes → Actualizar el juego ahora**: baja todo de nuevo sin borrar tu progreso.
+
 ## Cómo se juega
 
 - **Moverse:** arrastrá el dedo en cualquier parte de la pantalla. La nave dispara sola.
@@ -133,7 +135,7 @@ npm run test:e2e     # pruebas en un navegador con tamaño de celular (Playwrigh
 
 - **Pruebas de lógica:** guardado, código de progreso, mejoras, evoluciones, hangar, logros, desafío diario.
 - **Simulaciones:** un piloto automático juega partidas completas. Hay dos estrategias: una que elige mejoras casi al azar y otra «inteligente» que va directo a las evoluciones, junta los cristales y le apunta al jefe. Se verifica que cada jefe se pueda vencer en un tiempo razonable, que las primeras galaxias y el Modo Jefes se puedan terminar sin errores, que los jefes finales de las 10 galaxias funcionen, que la partida sea repetible con la misma semilla y que el balance esté en un rango sano.
-- **Pruebas en navegador:** se juega como una persona en pantallas de Android y iPhone: moverse, subir de nivel, pausar, morir, comprar en el hangar, recargar la página, ajustes, los 10 jefes, las 10 galaxias y que funcione sin internet.
+- **Pruebas en navegador:** se juega como una persona en pantallas de Android y iPhone: moverse, subir de nivel, pausar, morir, comprar en el hangar, recargar la página, ajustes, los 10 jefes, las 10 galaxias, que funcione sin internet y que una versión nueva reemplace a la vieja sin perder el progreso.
 
 Las pruebas corren solas en GitHub cada vez que se sube un cambio (pestaña **Actions**).
 

@@ -3,7 +3,7 @@
  * internet. La lista de archivos y la versión las escribe
  * scripts/gen-sw.js (no editarlas a mano).
  */
-const VERSION = '4f6f1d59a0';
+const VERSION = 'd9f9bd281f';
 const CACHE = 'chatarra-estelar-' + VERSION;
 const FILES = [
   // <archivos>
@@ -14,6 +14,7 @@ const FILES = [
   'js/core/audio.js',
   'js/core/rng.js',
   'js/core/save.js',
+  'js/core/updates.js',
   'js/core/util.js',
   'js/data/achievements.js',
   'js/data/bosses.js',
@@ -59,8 +60,32 @@ const FILES = [
   // </archivos>
 ];
 
+/**
+ * Baja cada archivo directo del servidor, sin pasar por la caché del
+ * navegador ni la de GitHub (por eso el `?v=`): así una versión nueva
+ * nunca se guarda con archivos viejos mezclados.
+ */
+async function fetchFresh(file) {
+  const url = new URL(file, self.registration.scope);
+  const busted = new URL(url);
+  busted.searchParams.set('v', VERSION);
+  const res = await fetch(busted, { cache: 'reload' });
+  if (!res.ok) throw new Error(`No se pudo bajar ${file}: ${res.status}`);
+  return [url, res];
+}
+
 self.addEventListener('install', event => {
-  event.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting()));
+  event.waitUntil((async () => {
+    const got = await Promise.all(FILES.map(fetchFresh));
+    const cache = await caches.open(CACHE);
+    await Promise.all(got.map(([url, res]) => cache.put(url, res)));
+    await self.skipWaiting();
+  })());
+});
+
+// La página pregunta qué versión tiene guardada (se muestra en Ajustes).
+self.addEventListener('message', event => {
+  if (event.data && event.data.type === 'version' && event.ports[0]) event.ports[0].postMessage({ version: VERSION });
 });
 
 self.addEventListener('activate', event => {

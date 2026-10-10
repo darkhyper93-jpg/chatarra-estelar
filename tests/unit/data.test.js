@@ -8,7 +8,7 @@ import { WEAPONS, WEAPON_IDS, WEAPON_MAX, weaponStats } from '../../js/data/weap
 import { PASSIVES } from '../../js/data/passives.js';
 import { SHIPS } from '../../js/data/ships.js';
 import { HANGAR, hangarCost } from '../../js/data/hangar.js';
-import { ACHIEVEMENTS, SHIP_UNLOCKS } from '../../js/data/achievements.js';
+import { ACHIEVEMENTS, ACH_BY_ID, SHIP_UNLOCKS } from '../../js/data/achievements.js';
 import { ENEMIES } from '../../js/data/enemies.js';
 import { BOSSES, BOSS_ORDER } from '../../js/data/bosses.js';
 import { GALAXIES, ZONE_BY_ID, zoneOf, isBossSector, GALAXY_SECTORS } from '../../js/data/zones.js';
@@ -115,4 +115,9 @@ test('mergeFlags combina modificadores', () => {
   assert.equal(f.eliteChance, 0.2);
   assert.equal(f.noHeal, true);
   assert.equal(mergeFlags([]).xp, 1);
+});
+
+test('los logros de galaxia concuerdan en género con el nombre', () => {
+  assert.equal(ACH_BY_ID.galaxia8.name, 'Nebulosa Prisma conquistada');
+  assert.equal(ACH_BY_ID.galaxia4.name, 'Archipiélago Esmeralda conquistado');
 });
