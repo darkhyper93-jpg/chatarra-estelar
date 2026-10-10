@@ -283,7 +283,7 @@ export function drawBoss(ctx, b, px, py) {
   if (b.tier && !b.part) {
     // Aura de las versiones Prime (roja) y Omega (celeste)
     const a0 = ctx.globalAlpha;
-    ctx.strokeStyle = b.tier === 1 ? '#ff5d73' : '#7fe8ff';
+    ctx.strokeStyle = b.aura || '#7fe8ff';
     ctx.lineWidth = 3;
     ctx.globalAlpha = a0 * (0.45 + Math.sin(b.t * 5) * 0.25);
     ctx.beginPath(); ctx.arc(0, 0, b.r + 22, 0, TAU); ctx.stroke();

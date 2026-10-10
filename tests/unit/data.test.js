@@ -60,7 +60,7 @@ test('logros con ids únicos y premio positivo', () => {
 });
 
 test('galaxias: 10 zonas cada una, con jefe y enemigos que existen', () => {
-  assert.equal(GALAXIES.length, 3);
+  assert.equal(GALAXIES.length, 10);
   const ids = new Set();
   for (const g of GALAXIES) {
     assert.equal(g.zones.length, 10, g.id);
@@ -73,8 +73,12 @@ test('galaxias: 10 zonas cada una, con jefe y enemigos que existen', () => {
       assert.ok(z.music && z.a && z.b);
     });
   }
-  assert.ok(GALAXIES[1].hp > GALAXIES[0].hp && GALAXIES[2].hp > GALAXIES[1].hp, 'cada galaxia es más difícil');
-  assert.ok(GALAXIES[2].scrap > GALAXIES[1].scrap, 'y da más chatarra');
+  for (let i = 1; i < GALAXIES.length; i++) {
+    assert.ok(GALAXIES[i].hp > GALAXIES[i - 1].hp, 'cada galaxia es más difícil');
+    assert.ok(GALAXIES[i].scrap > GALAXIES[i - 1].scrap, 'y da más chatarra');
+    assert.equal(GALAXIES[i].tier, i);
+  }
+  assert.equal(new Set(GALAXIES.map(g => g.name)).size, 10, 'nombres distintos');
   assert.equal(zoneOf(1).id, 'oxido');
   assert.equal(zoneOf(6, 1).id, 'arrecife');
   assert.equal(zoneOf(GALAXY_SECTORS, 2).id, 'singularidad');

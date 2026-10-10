@@ -82,10 +82,11 @@ export function renderMenu(app) {
 function renderGalaxies(app) {
   const save = app.save, sel = save.settings.galaxy || 0;
   const row = $('galRow');
+  $('mEyebrow').textContent = 'Galaxia ' + (sel + 1) + ' · ' + GALAXIES[sel].name;
   row.innerHTML = GALAXIES.map((g, i) => {
     const open = galaxyUnlocked(save, i);
-    const sub = !open ? 'Bloqueada' : save.galaxies.cleared[g.id] ? '✓ Completa' : (save.galaxies.best[g.id] ? 'Sector ' + save.galaxies.best[g.id] : g.name.split(' ').slice(-1)[0]);
-    return `<button role="radio" data-gal="${i}" aria-checked="${sel === i}" ${open ? '' : 'disabled'} title="${esc(g.name)}"><b>${['I', 'II', 'III'][i]}</b><small>${esc(sub)}</small></button>`;
+    const sub = !open ? 'bloq.' : save.galaxies.cleared[g.id] ? '✓' : (save.galaxies.best[g.id] ? 's' + save.galaxies.best[g.id] : 'nueva');
+    return `<button role="radio" data-gal="${i}" aria-checked="${sel === i}" ${open ? '' : 'disabled'} title="${esc(g.name)}"><b>${['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'][i]}</b><small>${esc(sub)}</small></button>`;
   }).join('');
   row.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
     save.settings.galaxy = +b.dataset.gal;

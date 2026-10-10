@@ -20,8 +20,9 @@ Queda un ícono como cualquier otra app; se abre en pantalla completa.
 
 ### Durante una partida
 
-- El juego tiene **3 galaxias**. Cada una tiene **10 zonas de 5 sectores** (50 sectores) y **10 jefes**. Al vencer al jefe de la zona 10 completás la galaxia y se abre la siguiente, que es más difícil y da más chatarra.
-- Cada **sector** dura 30 segundos. Cada 5 sectores aparece un **jefe**. En la galaxia 2 los jefes vuelven en versión **Prime** y en la 3 en versión **Omega**: más balas, más rápidos y con una fase de furia al final.
+- El juego tiene **10 galaxias**. Cada una tiene **10 zonas de 5 sectores** (50 sectores) y **10 jefes**. Al vencer al jefe de la zona 10 completás la galaxia y se abre la siguiente, que es más difícil y da más chatarra.
+- Cada galaxia completada da **poder galáctico** para siempre: +85% de daño y +35% de casco.
+- Cada **sector** dura 30 segundos. Cada 5 sectores aparece un **jefe**. Desde la galaxia 2 los jefes vuelven en versiones más fuertes (Prime, Omega, Esmeralda, Solar…): más balas, más rápidos y con una fase de furia al final.
 - Los jefes pegan muy fuerte: hay que esquivar. Los láseres que te apuntan se ponen **blancos** medio segundo antes de disparar: ahí es cuando tenés que correrte.
 - Los enemigos sueltan **cristales de experiencia**. Al subir de nivel elegís una mejora entre 3 (o 4) cartas.
 - Podés llevar hasta **4 armas** y **5 piezas pasivas**. Cada arma sube hasta el nivel 7.
@@ -36,7 +37,7 @@ Queda un ícono como cualquier otra app; se abre en pantalla completa.
 - **Hangar general:** 20 mejoras permanentes en 4 grupos (ataque, defensa, utilidad y táctica). Cada galaxia completada sube el máximo de varias de ellas. Se pueden devolver las mejoras para probar otra combinación.
 - **12 naves**, cada una con su arma inicial y un rasgo propio.
 - **Árbol de cada nave:** 8 mejoras exclusivas por nave (96 en total) en 4 escalones que se abren a medida que comprás. Sólo funcionan con esa nave. En el último escalón están las más fuertes, como evolucionar el arma sin necesitar la pasiva.
-- **Logros:** 39 logros que dan chatarra. Cuatro naves se desbloquean con logros (completar galaxias o desafíos diarios).
+- **Logros:** 47 logros que dan chatarra. Cuatro naves se desbloquean con logros (completar galaxias o desafíos diarios).
 - **Desafío diario:** todos juegan el mismo día con la misma nave y los mismos dos modificadores. Ideal para competir con amigos.
 - **Modo Jefes:** los 10 jefes seguidos. Se abre al vencer a El Desguace.
 - **Códice:** enciclopedia de enemigos, jefes, armas y pasivas que vas descubriendo.
@@ -46,17 +47,17 @@ Queda un ícono como cualquier otra app; se abre en pantalla completa.
 
 | | Cantidad |
 |---|---|
-| Galaxias | 3 |
-| Zonas (cada una con su peligro propio) | 30 |
-| Sectores | 150 |
-| Jefes, con 2 o 3 fases (más una de furia en Prime y Omega) | 10, en 3 versiones |
+| Galaxias | 10 |
+| Zonas (cada una con su peligro propio) | 100 |
+| Sectores | 500 |
+| Jefes, con 2 o 3 fases (más una de furia en Prime y Omega) | 10, en 10 versiones |
 | Tipos de enemigos y obstáculos | 26 |
 | Armas / evoluciones | 10 / 10 |
 | Piezas pasivas | 11 |
 | Naves | 12 |
 | Mejoras del hangar general | 20 (ampliables) |
 | Mejoras únicas de naves | 96 |
-| Logros | 39 |
+| Logros | 47 |
 | Niveles de dificultad | 4 |
 | Modos de juego | Campaña, Desafío diario, Modo Jefes |
 
@@ -65,6 +66,13 @@ Queda un ícono como cualquier otra app; se abre en pantalla completa.
 | 1. Cinturón de Chatarra | Anillo de Óxido, Deriva Ámbar, Fosa de Hielo, Cementerio de Cargueros, Nebulosa Coral, Tormenta de Iones, Vacío Profundo, Astillero Fantasma, Panal Estelar, Núcleo Estelar | Jefes nuevos: Titán Acorazado y La Colmena |
 | 2. Nebulosa Carmesí | Bruma Escarlata, Arrecife de Sangre, Dunas de Rubí, Fragua Carmesí, Jardín de Espinas, Cañón Rojo, Velo Ardiente, Ruinas Rojas, Corona Roja, Corazón Carmesí | Lancero, Nodriza, Fantasma y Mortero. Jefes Prime |
 | 3. Vórtice Abisal | Umbral, Fosa Silente, Jardín Negro, Espiral Rota, Cementerio de Estrellas, Mar de Plasma, Laberinto Gravitatorio, Horizonte de Eventos, Ojo de la Tormenta, Singularidad | Divisor y Acorazado. Jefes Omega |
+| 4. Archipiélago Esmeralda | Islas de Jade, Bosque de Cristal, Laguna Tóxica… Corazón Esmeralda | Tejedores y sanadores |
+| 5. Desierto Solar | Dunas Doradas, Espejismo, Oasis Seco… Ojo del Sol | Morteros y bombarderos |
+| 6. Glaciar Sideral | Grieta Helada, Aurora Boreal, Lago Congelado… Corona de Hielo | Francotiradores y fantasmas |
+| 7. Reino Mecánico | Engranajes, Fundición, Línea de Montaje… Mente Maestra | Nodrizas, acorazados y minadores |
+| 8. Nebulosa Prisma | Velo Violeta, Arcoíris Roto, Caleidoscopio… Núcleo Prisma | Lanceros y tejedores |
+| 9. Abismo Sombrío | Penumbra, Eclipse, Fosa Sin Fondo… Noche Eterna | Fantasmas y divisores |
+| 10. Fin del Universo | Última Frontera, Muerte Térmica, Gran Colapso… El Origen | Todo junto, al máximo |
 
 ### Evoluciones
 
@@ -124,8 +132,8 @@ npm run test:e2e     # pruebas en un navegador con tamaño de celular (Playwrigh
 ```
 
 - **Pruebas de lógica:** guardado, código de progreso, mejoras, evoluciones, hangar, logros, desafío diario.
-- **Simulaciones:** un piloto automático juega partidas completas. Hay dos estrategias: una que elige mejoras casi al azar y otra «inteligente» que va directo a las evoluciones, junta los cristales y le apunta al jefe. Se verifica que cada jefe se pueda vencer en un tiempo razonable, que las 3 galaxias y el Modo Jefes se puedan terminar sin errores, que la partida sea repetible con la misma semilla y que el balance esté en un rango sano.
-- **Pruebas en navegador:** se juega como una persona en pantallas de Android y iPhone: moverse, subir de nivel, pausar, morir, comprar en el hangar, recargar la página, ajustes, los 8 jefes, y que funcione sin internet.
+- **Simulaciones:** un piloto automático juega partidas completas. Hay dos estrategias: una que elige mejoras casi al azar y otra «inteligente» que va directo a las evoluciones, junta los cristales y le apunta al jefe. Se verifica que cada jefe se pueda vencer en un tiempo razonable, que las primeras galaxias y el Modo Jefes se puedan terminar sin errores, que los jefes finales de las 10 galaxias funcionen, que la partida sea repetible con la misma semilla y que el balance esté en un rango sano.
+- **Pruebas en navegador:** se juega como una persona en pantallas de Android y iPhone: moverse, subir de nivel, pausar, morir, comprar en el hangar, recargar la página, ajustes, los 10 jefes, las 10 galaxias y que funcione sin internet.
 
 Las pruebas corren solas en GitHub cada vez que se sube un cambio (pestaña **Actions**).
 

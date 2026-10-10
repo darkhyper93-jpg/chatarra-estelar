@@ -11,6 +11,7 @@ import { WEAPONS } from '../data/weapons.js';
 import { nextCost, buyHangar, buyOrSelectShip, refundHangar, checkAchievements, nextTreeCost, buyTree, galaxiesCleared } from '../game/progress.js';
 import { TREES, TIER_NEEDS, treeLevels, treeMax, tierOpen } from '../data/trees.js';
 import { hangarMax } from '../data/hangar.js';
+import { GALAXY_POWER } from '../data/zones.js';
 import { drawShip } from '../render/sprites.js';
 
 let tab = 'up';
@@ -27,6 +28,9 @@ export function renderHangar(app) {
     <div class="tabs" role="tablist"><button data-tab="up" class="${tab === 'up' ? 'on' : ''}">General</button><button data-tab="tree" class="${tab === 'tree' ? 'on' : ''}">${esc(SHIPS[save.ship].name)}</button><button data-tab="ships" class="${tab === 'ships' ? 'on' : ''}">Naves</button></div>
     <div class="list">`;
   if (tab === 'up') {
+    const k = galaxiesCleared(save);
+    h += `<div class="row sel"><div class="info"><h3>Poder galáctico</h3><p>Cada galaxia completada te da +85% de daño y +35% de casco para siempre.</p>
+      <p class="trait">${k ? `Galaxias completadas: ${k} · daño ×${Math.pow(GALAXY_POWER.might, k).toFixed(1).replace('.', ',')} · casco ×${Math.pow(GALAXY_POWER.hp, k).toFixed(1).replace('.', ',')}` : 'Todavía no completaste ninguna galaxia.'}</p></div></div>`;
     for (const g of HANGAR_GROUPS) {
       h += `<p class="group-title">${g.name}</p>`;
       for (const m of HANGAR.filter(x => x.group === g.id)) {

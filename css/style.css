@@ -122,10 +122,10 @@ h2 { font-size: 28px; line-height: 1.05; }
 .mode.done small { color: var(--mint); }
 .mode:disabled { opacity: .5; }
 
-.gal { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
-.gal button { text-align: left; display: grid; gap: 2px; padding: 9px 10px; border-radius: 8px; border: 1.5px solid var(--line); background: var(--deep); min-width: 0; }
+.gal { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+.gal button { text-align: center; display: grid; gap: 1px; padding: 7px 4px; border-radius: 8px; border: 1.5px solid var(--line); background: var(--deep); min-width: 0; }
 .gal button b { font-family: var(--f-display); font-weight: 400; font-size: 13px; letter-spacing: .04em; }
-.gal button small { font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gal button small { font-size: 10px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .gal button[aria-checked=true] { border-color: var(--amber); background: var(--panel); }
 .gal button[aria-checked=true] b { color: var(--amber); }
 .gal button:disabled { opacity: .45; }

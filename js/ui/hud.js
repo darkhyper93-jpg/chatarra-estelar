@@ -8,6 +8,8 @@ import { fmt } from '../core/util.js';
 import { SECTOR_SECONDS, isBossSector } from '../data/zones.js';
 import { bossHpFrac } from '../game/bosses.js';
 
+const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
+
 export function createHud() {
   const cache = {};
   const setT = (id, v) => { if (cache[id] !== v) { cache[id] = v; $(id).textContent = v; } };
@@ -30,7 +32,7 @@ export function createHud() {
     setT('lvTxt', 'NV ' + p.level);
     setT('shieldTxt', s.shieldMax ? 'ESCUDO ' + p.shield + '/' + s.shieldMax : '');
     setT('comboTxt', p.combo >= 5 ? 'RACHA ×' + p.combo : '');
-    setT('sectorTxt', run.mode === 'bossrush' ? 'JEFE ' + ((run.rushIndex ?? 0) + 1) + '/10' : (run.galaxy ? ['', 'II', 'III'][run.galaxy] + ' · ' : '') + 'SECTOR ' + run.sector);
+    setT('sectorTxt', run.mode === 'bossrush' ? 'JEFE ' + ((run.rushIndex ?? 0) + 1) + '/10' : (run.galaxy ? ROMAN[run.galaxy] + ' · ' : '') + 'SECTOR ' + run.sector);
     const prog = run.mode === 'bossrush' || isBossSector(run.sector) ? (run.bossDone ? 1 : run.boss ? 1 - bossHpFrac(run.boss) : 0) : run.sectorT / SECTOR_SECONDS;
     setW('secFill', prog);
     setT('scrapTxt', fmt(run.scrap));

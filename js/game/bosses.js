@@ -4,6 +4,7 @@
  * (1 = vida llena, 0.5 = mitad) y repite sus ataques en orden.
  */
 import { BOSSES } from '../data/bosses.js';
+import { GALAXIES, BOSS_SUFFIX } from '../data/zones.js';
 import { clamp, segDist2, TAU } from '../core/util.js';
 import { addBeam, drop, dropXP, hitPlayer } from './combat.js';
 import { shoot, aimAt, spawnEnemy } from './enemies.js';
@@ -18,12 +19,14 @@ function bshoot(run, x, y, ang, speed, o = {}) {
 import { banner, burst, emit, explode, ring, sfx, shake } from './fx.js';
 
 const ENTER = 1.8; // segundos que tarda en entrar a la pantalla
+/** Los patrones de balas se vuelven más densos hasta la galaxia 5; después sólo suben vida y daño. */
+const PT_MAX = 4;
 
 /* ------------------------- ataques comunes ------------------------- */
 
 /** Anillo de n balas alrededor del jefe. `gap` deja un hueco (en balas) apuntando a `gapAng`. */
 function ringShot(run, b, n, speed, o = {}) {
-  const T = run.tier || 0;
+  const T = Math.min(PT_MAX, run.tier || 0);
   n = Math.round(n * (1 + 0.25 * T));
   speed *= 1 + 0.08 * T;
   const off = o.offset ?? b.t;
@@ -39,7 +42,7 @@ function ringShot(run, b, n, speed, o = {}) {
 
 /** Abanico de n balas apuntado al jugador. */
 function fanShot(run, b, n, spread, speed, o = {}) {
-  const T = run.tier || 0;
+  const T = Math.min(PT_MAX, run.tier || 0);
   n += 2 * T;
   speed *= 1 + 0.08 * T;
   const a0 = aimAt(run, b.x, b.y);
@@ -48,7 +51,7 @@ function fanShot(run, b, n, spread, speed, o = {}) {
 
 /** Empieza una espiral que dura `dur` segundos. */
 function startSpiral(b, dur, arms, speed, rate = 0.08, turn = 3, o = {}) {
-  const T = b.tier || 0;
+  const T = Math.min(PT_MAX, b.tier || 0);
   b.spiral = { t: dur, arms: arms + T, speed: speed * (1 + 0.06 * T), rate: rate / (1 + 0.15 * T), turn, acc: 0, ang: b.t, o };
 }
 
@@ -484,7 +487,7 @@ export function spawnBoss(run, bossId) {
   const hpScale = run.hpMul * (1 + 0.22 * run.zi) * run.flags.enemyHp;
   const tier = run.tier || 0;
   const b = {
-    id: ++run.eid, type: 'boss', isBoss: true, bossId, tier, name: d.name + (['', ' Prime', ' Omega'][tier] || ''), x: run.W / 2, y: -100, homeY: Math.max(run.H * 0.25, 180),
+    id: ++run.eid, type: 'boss', isBoss: true, bossId, tier, name: d.name + (run.mode === 'bossrush' ? '' : BOSS_SUFFIX[run.galaxy || 0] || ''), aura: tier ? GALAXIES[run.galaxy || 0].accent : null, x: run.W / 2, y: -100, homeY: Math.max(run.H * 0.25, 180),
     r: d.r, hp: d.hp * hpScale, maxHp: d.hp * hpScale, hpScale, color: d.color, t: 0, flash: 0,
     contact: 50 * run.dmgMul, vx: 55 + run.zi * 5, phase: 0, patT: 1.6, pat: 0, entered: false,
     parts: [], dead: false, stun: 0, dmgTaken: 1,
@@ -601,7 +604,7 @@ export function updateBoss(run, dt) {
     const atk = phase.attacks[b.pat % phase.attacks.length];
     b.pat++;
     atk(run, b);
-    b.patT = (b.patGap || phase.gap) / Math.min(1.35, run.fireMul) / (1 + 0.12 * (b.tier || 0));
+    b.patT = (b.patGap || phase.gap) / Math.min(1.35, run.fireMul) / (1 + 0.12 * Math.min(PT_MAX, b.tier || 0));
   }
   // Versiones Prime y Omega: con poca vida se enfurecen y disparan anillos extra.
   if (b.tier >= 1 && frac < 0.25) {
@@ -611,7 +614,7 @@ export function updateBoss(run, dt) {
       sfx(run, 'alarm');
     }
     b.rageT = (b.rageT || 0) - dt;
-    if (b.rageT <= 0) { b.rageT = 1.5 - 0.3 * b.tier; ringShot(run, b, 10, 95, { offset: b.t * 1.3 }); }
+    if (b.rageT <= 0) { b.rageT = 1.5 - 0.25 * Math.min(PT_MAX, b.tier); ringShot(run, b, 10, 95, { offset: b.t * 1.3 }); }
   }
   // Choque con la nave
   const p = run.player;

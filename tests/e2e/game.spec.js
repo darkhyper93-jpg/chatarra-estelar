@@ -174,6 +174,24 @@ test('galaxias y árbol de la nave', async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
+test('las galaxias 4 a 10 y sus jefes finales se juegan sin errores', async ({ page }) => {
+  test.setTimeout(120_000);
+  const errors = watchErrors(page);
+  // El menú muestra las 10 galaxias
+  await expect(page.locator('#galRow [data-gal]')).toHaveCount(10);
+  for (const g of [3, 6, 9]) {
+    await page.evaluate(g => {
+      __ce.startRun({ mode: 'campaign', galaxy: g, debugSector: 50, god: true, seed: g });
+      window.__auto = setInterval(() => { const c = document.querySelector('#s-levelup:not([hidden]) .card'); if (c) c.click(); }, 30);
+    }, g);
+    await page.waitForFunction(() => __ce.run && __ce.run.boss && __ce.run.boss.entered, null, { timeout: 15_000 });
+    await page.waitForTimeout(2500);
+    await expect(page.locator('#bossBar')).toBeVisible();
+    await page.evaluate(() => { clearInterval(window.__auto); __ce.toMenu(); });
+  }
+  expect(errors).toEqual([]);
+});
+
 test('los enemigos nuevos de las galaxias 2 y 3 se dibujan sin errores', async ({ page }) => {
   const errors = watchErrors(page);
   for (const [g, s] of [[1, 18], [2, 18]]) {

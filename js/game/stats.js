@@ -9,6 +9,7 @@ import { TREES } from '../data/trees.js';
 import { PASSIVES } from '../data/passives.js';
 import { MODIFIERS } from '../data/modes.js';
 import { weaponStats } from '../data/weapons.js';
+import { GALAXY_POWER } from '../data/zones.js';
 
 /** Estadísticas de partida para una nave, su árbol y el hangar, sin pasivas. */
 export function baseStats(shipId, hangar = {}, mods = [], tree = {}) {
@@ -43,6 +44,11 @@ export function recomputeStats(run) {
   for (const id of run.mods) MODIFIERS[id]?.apply?.(s);
   if (run.diff) s.scrapMul *= run.diff.scrap;
   if (run.galaxyMul) s.scrapMul *= run.galaxyMul;
+  if (run.galaxyPower) {
+    // Poder ganado por cada galaxia completada
+    s.might *= Math.pow(GALAXY_POWER.might, run.galaxyPower);
+    s.maxHp *= Math.pow(GALAXY_POWER.hp, run.galaxyPower);
+  }
   if (p.weapons.some(w => w.id === 'drones' && w.evolved)) s.magnet *= 1.6;
   s.maxHp = Math.round(s.maxHp);
   const old = p.stats;

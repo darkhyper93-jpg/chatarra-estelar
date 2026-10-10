@@ -17,6 +17,25 @@ export const GALAXY_SECTORS = SECTORS_PER_ZONE * ZONES_PER_GALAXY;
 const BASIC = { dron: 5, cazador: 6, chispa: 5, torreta: 5, enjambre: 4, tanque: 4, francotirador: 4, minador: 3, bombardero: 3, escudero: 4, tejedor: 4, sanador: 3 };
 const mix = (...parts) => Object.assign({}, ...parts);
 
+/**
+ * Dificultad y recompensa de cada galaxia (índice 0 a 9). Cada galaxia
+ * completada además le da poder a la nave (ver GALAXY_POWER), así que la
+ * siguiente es más difícil, pero no imposible.
+ */
+export const GALAXY_CURVE = [
+  { hp: 1, dmg: 1, scrap: 1 }, { hp: 2.6, dmg: 1.6, scrap: 1.8 }, { hp: 6, dmg: 2.4, scrap: 3 },
+  { hp: 13, dmg: 3.4, scrap: 4.5 }, { hp: 28, dmg: 4.8, scrap: 6.5 }, { hp: 60, dmg: 6.6, scrap: 9 },
+  { hp: 130, dmg: 9, scrap: 12 }, { hp: 280, dmg: 12, scrap: 16 }, { hp: 600, dmg: 16, scrap: 21 }, { hp: 1300, dmg: 21, scrap: 28 },
+];
+
+/** Poder permanente por cada galaxia completada: más daño y más casco. */
+export const GALAXY_POWER = { might: 1.85, hp: 1.35 };
+
+/** Sufijo del nombre de los jefes en cada galaxia. */
+export const BOSS_SUFFIX = ['', ' Prime', ' Omega', ' Esmeralda', ' Solar', ' Glacial', ' Mecánico', ' Prisma', ' Sombrío', ' Final'];
+
+const BOSS_ORDER_IDS = ['recolector', 'matriarca', 'coloso', 'desguace', 'reina', 'gemelas', 'ojo', 'titan', 'colmena', 'forjador'];
+
 export const GALAXIES = [
   {
     id: 'cinturon', name: 'Cinturón de Chatarra', tier: 0, hp: 1, dmg: 1, scrap: 1, suffix: '', accent: '#ffb547',
@@ -67,6 +86,49 @@ export const GALAXIES = [
     ],
   },
 ];
+
+/* ------------------------------------------------------------------ */
+/* Galaxias 4 a 10: se arman con una receta común (colores, peligros   */
+/* y enemigos) para no repetir 70 zonas a mano.                        */
+/* ------------------------------------------------------------------ */
+
+/** Convierte un color HSL (0-360, 0-100, 0-100) a hexadecimal. */
+function hsl(h, s, l) {
+  s /= 100; l /= 100;
+  const k = n => (n + h / 30) % 12, a = s * Math.min(l, 1 - l);
+  const f = n => Math.round(255 * (l - a * Math.max(-1, Math.min(k(n) - 3, 9 - k(n), 1)))).toString(16).padStart(2, '0');
+  return '#' + f(0) + f(8) + f(4);
+}
+
+const ALL_NEW = { lancero: 4, nodriza: 4, fantasma: 4, mortero: 4, divisor: 4, acorazado: 4 };
+const HAZARD_SETS = [null, 'hielo', 'escombros', 'esporas', 'rayos', 'gravedad', ['escombros', 'gravedad'], ['rayos', 'esporas'], ['llamaradas', 'rayos'], ['llamaradas', 'rayos', 'gravedad']];
+const SCALES = ['minor', 'dorian', 'phrygian', 'harmonic'];
+
+/** Arma una galaxia a partir de su nombre, color base y los nombres de sus 10 zonas. */
+function makeGalaxy(tier, id, name, hue, blurb, zoneNames, extra = {}) {
+  return {
+    id, name, tier, blurb,     hp: GALAXY_CURVE[tier].hp, dmg: GALAXY_CURVE[tier].dmg, scrap: GALAXY_CURVE[tier].scrap,
+    suffix: BOSS_SUFFIX[tier], accent: hsl(hue, 85, 65),
+    zones: zoneNames.map((zn, i) => ({
+      id: id + '-' + (i + 1), name: zn, boss: BOSS_ORDER_IDS[i],
+      blurb: extra.blurbs?.[i] || blurb,
+      a: hsl((hue + i * 9) % 360, 60, 18 + (i % 3) * 3), b: hsl((hue + 200 + i * 7) % 360, 50, 14), accent: hsl((hue + i * 9) % 360, 85, 65),
+      pool: mix(BASIC, ALL_NEW, i >= 7 ? { tanque: 6, acorazado: 6, divisor: 6 } : {}, extra.pool || {}),
+      hazard: HAZARD_SETS[(i + tier) % HAZARD_SETS.length] || (i ? 'rayos' : null),
+      music: { root: 38 + ((tier * 3 + i) % 11), scale: SCALES[(tier + i) % SCALES.length], bpm: 116 + tier * 2 + i * 2 },
+    })),
+  };
+}
+
+GALAXIES.push(
+  makeGalaxy(3, 'esmeralda', 'Archipiélago Esmeralda', 140, 'Islas verdes llenas de esporas y emboscadas.', ['Islas de Jade', 'Bosque de Cristal', 'Laguna Tóxica', 'Selva de Esporas', 'Pantano Brillante', 'Cascada de Luz', 'Cañada Verde', 'Templo de Musgo', 'Raíz Profunda', 'Corazón Esmeralda'], { pool: { tejedor: 6, sanador: 5 } }),
+  makeGalaxy(4, 'solar', 'Desierto Solar', 42, 'Arena dorada, calor y llamaradas.', ['Dunas Doradas', 'Espejismo', 'Oasis Seco', 'Tormenta de Arena', 'Valle del Sol', 'Ruinas Áureas', 'Cráter Ardiente', 'Pirámide Rota', 'Horno Estelar', 'Ojo del Sol'], { pool: { mortero: 7, bombardero: 6 } }),
+  makeGalaxy(5, 'glaciar', 'Glaciar Sideral', 195, 'Hielo eterno. Balas que se parten y muros congelados.', ['Grieta Helada', 'Campo de Escarcha', 'Aurora Boreal', 'Témpano Errante', 'Cueva de Cristal', 'Viento Polar', 'Lago Congelado', 'Cumbre Blanca', 'Tormenta de Nieve', 'Corona de Hielo'], { pool: { francotirador: 7, fantasma: 6 } }),
+  makeGalaxy(6, 'mecanico', 'Reino Mecánico', 25, 'Fábricas que nunca paran de construir naves.', ['Engranajes', 'Fundición', 'Línea de Montaje', 'Red Eléctrica', 'Depósito', 'Cinta Transportadora', 'Sala de Máquinas', 'Torre de Control', 'Reactor', 'Mente Maestra'], { pool: { nodriza: 7, acorazado: 6, minador: 6 } }),
+  makeGalaxy(7, 'prisma', 'Nebulosa Prisma', 300, 'Luz partida en mil colores. Todo brilla, todo lastima.', ['Velo Violeta', 'Arcoíris Roto', 'Espejo Infinito', 'Prisma Partido', 'Luz Dispersa', 'Caleidoscopio', 'Rayo Índigo', 'Bruma Rosa', 'Cristal Vivo', 'Núcleo Prisma'], { pool: { lancero: 7, tejedor: 6 } }),
+  makeGalaxy(8, 'abismo', 'Abismo Sombrío', 350, 'Oscuridad casi total. Los fantasmas cazan en grupo.', ['Penumbra', 'Eclipse', 'Sombra Viva', 'Grieta Oscura', 'Valle del Silencio', 'Niebla Negra', 'Fosa Sin Fondo', 'Trono Oscuro', 'Eco del Vacío', 'Noche Eterna'], { pool: { fantasma: 8, divisor: 6 } }),
+  makeGalaxy(9, 'final', 'Fin del Universo', 265, 'La última galaxia. Si la terminás, no queda nada por conquistar.', ['Última Frontera', 'Polvo Estelar', 'Muerte Térmica', 'Gran Colapso', 'Nebulosa Final', 'Estrellas Moribundas', 'Borde del Tiempo', 'Vacío Primordial', 'Puerta Cósmica', 'El Origen'], { pool: { acorazado: 7, nodriza: 6, divisor: 6, lancero: 6 } }),
+);
 
 export const GALAXY_IDS = GALAXIES.map(g => g.id);
 

@@ -37,7 +37,7 @@ export function createRun(opts) {
 
   const run = {
     mode, seed, W: WORLD_W, H, rng: createRng(seed), noFx: !!opts.noFx, god: !!opts.god,
-    galaxy, galaxyMul: GALAXIES[galaxy].scrap,
+    galaxy, galaxyMul: GALAXIES[galaxy].scrap, galaxyPower: GALAXIES.filter(g => (save.galaxies || { cleared: {} }).cleared[g.id]).length,
     diffId: mode === 'daily' ? 'normal' : (DIFFICULTIES[opts.difficulty] ? opts.difficulty : 'normal'),
     hangar: Object.assign({}, save.hangar), settings: save.settings || {},
     bossesBefore: Object.assign({}, save.bosses), mods, flags: mergeFlags(mods),

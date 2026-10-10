@@ -29,7 +29,7 @@ export function setDifficulty(run) {
   run.ebDmg = 10 * run.dmgMul;
   run.bulletSpeed = (zone.bulletSpeed || 1) * (1 + Math.min(0.5, (s - 1) * 0.012));
   run.fireMul = f.fireRate * d.fire * Math.min(1.4, 1 + (s - 1) * 0.02);
-  run.eliteChance = f.eliteChance + (s >= 6 ? Math.min(0.03, 0.003 * (s - 5)) : 0) + 0.015 * run.tier;
+  run.eliteChance = f.eliteChance + (s >= 6 ? Math.min(0.03, 0.003 * (s - 5)) : 0) + Math.min(0.1, 0.012 * run.tier);
 }
 
 /** Pasa al sector siguiente. */
