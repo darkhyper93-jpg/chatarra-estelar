@@ -16,7 +16,7 @@ test('el manifiesto y los íconos son válidos', async ({ page, request }) => {
   const res = await request.get('/' + href);
   expect(res.ok()).toBe(true);
   const m = await res.json();
-  expect(m.name).toBe('Chatarra Estelar');
+  expect(m.name).toBe('Scrap Nova');
   expect(m.display).toBe('fullscreen');
   expect(m.icons.some(i => i.sizes === '512x512' && i.purpose === 'maskable')).toBe(true);
   for (const icon of m.icons) expect((await request.get('/' + icon.src)).ok()).toBe(true);
@@ -58,7 +58,7 @@ test('una versión nueva reemplaza a la vieja sola y sin perder el progreso', as
     await page.reload();
     await page.waitForFunction(() => !!navigator.serviceWorker.controller);
     let c = await cached(page);
-    expect(c.keys).toEqual(['chatarra-estelar-vieja00000']);
+    expect(c.keys).toEqual(['scrap-nova-vieja00000']);
     expect(c.ships).toContain('// copia vieja');
     // Algo de progreso guardado: apagar la vibración guarda la partida, y le sumamos chatarra.
     await page.click('#settingsBtn');
@@ -78,7 +78,7 @@ test('una versión nueva reemplaza a la vieja sola y sin perder el progreso', as
   const reloaded = page.waitForEvent('load');
   await page.evaluate(() => navigator.serviceWorker.getRegistration().then(r => r.update()));
   await reloaded;
-  await page.waitForFunction(v => caches.keys().then(k => k.length === 1 && k[0] === 'chatarra-estelar-' + v), real);
+  await page.waitForFunction(v => caches.keys().then(k => k.length === 1 && k[0] === 'scrap-nova-' + v), real);
   const c = await cached(page);
   expect(c.ships).not.toContain('// copia vieja');
   expect(c.ships).toContain('quimera');
@@ -97,7 +97,7 @@ test('una versión nueva reemplaza a la vieja sola y sin perder el progreso', as
 /** Lo que el service worker tiene guardado: nombres de caché y el archivo de naves. */
 function cached(page) {
   return page.evaluate(async () => {
-    const keys = (await caches.keys()).filter(k => k.startsWith('chatarra-estelar-'));
+    const keys = (await caches.keys()).filter(k => k.startsWith('scrap-nova-'));
     const ships = keys.length ? await (await caches.open(keys[keys.length - 1])).match(new URL('js/data/ships.js', location.href)) : null;
     return { keys, ships: ships ? await ships.text() : '' };
   });

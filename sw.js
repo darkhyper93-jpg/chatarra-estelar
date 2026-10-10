@@ -3,8 +3,10 @@
  * internet. La lista de archivos y la versión las escribe
  * scripts/gen-sw.js (no editarlas a mano).
  */
-const VERSION = 'd9f9bd281f';
-const CACHE = 'chatarra-estelar-' + VERSION;
+const VERSION = '9ffe407dbd';
+const CACHE = 'scrap-nova-' + VERSION;
+// Prefijos de copias viejas que se pueden borrar (el juego antes se llamaba Chatarra Estelar).
+const OLD_PREFIXES = ['scrap-nova-', 'chatarra-estelar-'];
 const FILES = [
   // <archivos>
   './',
@@ -91,7 +93,7 @@ self.addEventListener('message', event => {
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys()
-      .then(keys => Promise.all(keys.filter(k => k.startsWith('chatarra-estelar-') && k !== CACHE).map(k => caches.delete(k))))
+      .then(keys => Promise.all(keys.filter(k => k !== CACHE && OLD_PREFIXES.some(p => k.startsWith(p))).map(k => caches.delete(k))))
       .then(() => self.clients.claim()),
   );
 });

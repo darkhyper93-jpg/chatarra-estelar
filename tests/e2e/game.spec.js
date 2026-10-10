@@ -29,7 +29,7 @@ test.beforeEach(async ({ page }) => {
 test('el menú carga sin errores y entra en la pantalla', async ({ page }) => {
   const errors = watchErrors(page);
   await page.reload();
-  await expect(page).toHaveTitle('Chatarra Estelar');
+  await expect(page).toHaveTitle('Scrap Nova');
   await expect(page.locator('#playBtn')).toBeVisible();
   await expect(page.locator('#rushBtn')).toBeDisabled();
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);

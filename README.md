@@ -1,8 +1,10 @@
-# Chatarra Estelar
+# Scrap Nova
 
 Un shooter espacial para el celular. Recorrés un cinturón de chatarra, destruís naves enemigas, mejorás tu nave en pleno vuelo y gastás la chatarra en el hangar para llegar cada vez más lejos.
 
-**Jugar:** https://darkhyper93-jpg.github.io/chatarra-estelar/
+**Jugar:** https://darkhyper93-jpg.github.io/scrap-nova/
+
+> Antes se llamaba *Chatarra Estelar*. El link viejo te manda solo al nuevo y el progreso se conserva.
 
 Funciona en el navegador de cualquier celular o computadora y **se puede instalar como app**. Después de la primera visita también funciona sin internet.
 

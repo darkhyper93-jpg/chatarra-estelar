@@ -189,10 +189,10 @@ export function renderOver(app, run, res) {
   $('oShare').onclick = async () => {
     const ship = SHIPS[run.player.shipId].name;
     const what = run.mode === 'daily' ? `el Desafío diario` : run.mode === 'bossrush' ? 'el Modo Jefes' : `el sector ${run.sector}`;
-    const text = `Hice ${fmt(run.score)} puntos en ${what} de Chatarra Estelar con la nave ${ship}. ¿Me superás?`;
+    const text = `Hice ${fmt(run.score)} puntos en ${what} de Scrap Nova con la nave ${ship}. ¿Me superás?`;
     const url = location.href.split('#')[0].split('?')[0];
     try {
-      if (navigator.share) { await navigator.share({ title: 'Chatarra Estelar', text, url }); return; }
+      if (navigator.share) { await navigator.share({ title: 'Scrap Nova', text, url }); return; }
     } catch (e) { if (e && e.name === 'AbortError') return; }
     const ok = await copyText(text + ' ' + url);
     $('oMsg').className = 'msg ' + (ok ? 'ok' : 'err');

@@ -37,5 +37,5 @@ export function serve(port = 8080) {
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
   const port = Number(process.env.PORT) || 8080;
-  serve(port).then(() => console.log(`Chatarra Estelar en http://localhost:${port}`));
+  serve(port).then(() => console.log(`Scrap Nova en http://localhost:${port}`));
 }

@@ -5,6 +5,8 @@
  * de un dispositivo a otro.
  */
 
+// El juego antes se llamaba «Chatarra Estelar». La clave del guardado queda
+// igual a propósito, para que nadie pierda su progreso con el cambio de nombre.
 export const SAVE_KEY = 'chatarra-estelar-save';
 export const SAVE_VERSION = 2;
 
@@ -102,7 +104,7 @@ export function exportCode(save) {
  */
 export function importCode(code) {
   const parts = String(code || '').trim().split('.');
-  if (parts.length !== 3 || parts[0] !== 'CE2') throw new Error('Ese texto no es un código de Chatarra Estelar.');
+  if (parts.length !== 3 || parts[0] !== 'CE2') throw new Error('Ese texto no es un código de Scrap Nova.');
   let json;
   try {
     json = decodeURIComponent(escape(fromB64(parts[2])));

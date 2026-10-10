@@ -11,7 +11,9 @@
  *   guardada (no el progreso, que vive aparte en localStorage).
  */
 
-const CACHE_PREFIX = 'chatarra-estelar-';
+const CACHE_PREFIX = 'scrap-nova-';
+// Copias guardadas por versiones de cuando el juego se llamaba Chatarra Estelar.
+const LEGACY_PREFIX = 'chatarra-estelar-';
 const CHECK_EVERY = 60_000;
 
 let registration = null;
@@ -75,12 +77,13 @@ export function installedVersion() {
 export async function forceUpdate() {
   try {
     if ('serviceWorker' in navigator) {
+      // Sólo el del juego: en el mismo sitio puede haber otras páginas con el suyo.
       const regs = await navigator.serviceWorker.getRegistrations();
-      await Promise.all(regs.map(r => r.unregister()));
+      await Promise.all(regs.filter(r => location.href.startsWith(r.scope)).map(r => r.unregister()));
     }
     if ('caches' in self) {
       const keys = await caches.keys();
-      await Promise.all(keys.filter(k => k.startsWith(CACHE_PREFIX)).map(k => caches.delete(k)));
+      await Promise.all(keys.filter(k => k.startsWith(CACHE_PREFIX) || k.startsWith(LEGACY_PREFIX)).map(k => caches.delete(k)));
     }
   } finally {
     location.replace(location.pathname + '?u=' + Date.now());
