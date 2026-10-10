@@ -12,7 +12,7 @@ import { BOSSES, BOSS_ORDER } from '../data/bosses.js';
 import { WEAPON_IDS } from '../data/weapons.js';
 import { PASSIVE_IDS } from '../data/passives.js';
 import { ZONES, CAMPAIGN_SECTORS } from '../data/zones.js';
-import { MODIFIERS, DAILY_GOAL, DAILY_REWARD, dailyFor } from '../data/modes.js';
+import { MODIFIERS, DAILY_GOAL, DAILY_REWARD, DIFFICULTIES, DIFFICULTY_IDS, dailyFor } from '../data/modes.js';
 import { nextCost, bossRushUnlocked, maxZone } from '../game/progress.js';
 
 /** Frase de "próximo objetivo" para motivar la siguiente partida. */
@@ -62,7 +62,24 @@ export function renderMenu(app) {
   $('achSub').textContent = got + '/' + ACHIEVEMENTS.length;
   $('codexSub').textContent = codexPercent(save) + '%';
   $('installBtn').hidden = !app.canInstall();
+  renderDifficulty(app);
   showScreen('s-menu');
+}
+
+/** Selector de dificultad debajo de "Despegar". */
+function renderDifficulty(app) {
+  const st = app.save.settings;
+  const open = id => !DIFFICULTIES[id].unlock || (app.save.bosses[DIFFICULTIES[id].unlock] || 0) > 0;
+  if (!DIFFICULTIES[st.difficulty] || !open(st.difficulty)) st.difficulty = 'normal';
+  const row = $('diffRow');
+  row.innerHTML = DIFFICULTY_IDS.map(id => `<button role="radio" data-diff="${id}" aria-checked="${st.difficulty === id}" ${open(id) ? '' : 'disabled'} title="${esc(open(id) ? DIFFICULTIES[id].desc : 'Vencé a El Forjador para abrirla')}">${esc(DIFFICULTIES[id].name)}</button>`).join('');
+  row.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+    st.difficulty = b.dataset.diff;
+    app.persist();
+    app.sfx('click');
+    renderDifficulty(app);
+    $('mGoal').textContent = DIFFICULTIES[st.difficulty].desc;
+  }));
 }
 
 /** Pantalla para elegir desde qué zona despegar (mejora "Mapa estelar"). */

@@ -9,7 +9,7 @@ export const BOSSES = {
   coloso:     { name: 'Coloso de Hielo', hp: 1300, r: 48, color: '#7fe8ff', desc: 'Sus cristales se parten en tres. Tira muros de hielo con un hueco: buscalo.' },
   desguace:   { name: 'El Desguace',    hp: 1100, r: 46, color: '#d6a983', desc: 'Tiene dos garras que se pueden destruir. Sin garras, queda expuesto.', arms: 420 },
   reina:      { name: 'Reina Coral',    hp: 1500, r: 44, color: '#ff6fb1', desc: 'Se teletransporta y dispara pétalos. En la segunda fase crea reflejos.' },
-  gemelas:    { name: 'Bobinas Gemelas', hp: 950,  r: 36, color: '#9fb4ff', desc: 'Dos núcleos unidos por un rayo eléctrico. No cruces entre ellos.' },
+  gemelas:    { name: 'Bobinas Gemelas', hp: 950,  r: 36, color: '#9fb4ff', desc: 'Dos núcleos unidos por un rayo eléctrico. No cruces entre ellos. Cuando sus láseres se ponen blancos, corréte.' },
   ojo:        { name: 'Ojo del Vacío',  hp: 1700, r: 50, color: '#b9a0ff', desc: 'Te atrae con su gravedad y mira con un rayo enorme. Tiene tres fases.' },
   forjador:   { name: 'El Forjador',    hp: 2400, r: 52, color: '#ffd166', desc: 'El jefe final. Martillos, llamaradas y los ataques de todos los demás.' },
 };

@@ -33,6 +33,7 @@ export function recomputeStats(run) {
   const s = baseStats(p.shipId, run.hangar, []);
   for (const id in p.passives) PASSIVES[id].apply(s, p.passives[id]);
   for (const id of run.mods) MODIFIERS[id]?.apply?.(s);
+  if (run.diff) s.scrapMul *= run.diff.scrap;
   if (p.weapons.some(w => w.id === 'drones' && w.evolved)) s.magnet *= 1.6;
   s.maxHp = Math.round(s.maxHp);
   const old = p.stats;
@@ -47,18 +48,18 @@ export function recomputeStats(run) {
 }
 
 /** Experiencia necesaria para pasar del nivel l al siguiente. */
-export const xpNeed = l => Math.floor(5 * Math.pow(l, 1.38) + 3);
+export const xpNeed = l => Math.floor(5 * Math.pow(l, 1.45) + 3);
 
 /** Multiplicador de vida de los enemigos según el sector. */
 export function hpMul(sector) {
   const s = sector - 1;
-  return (1 + 0.25 * s + 0.013 * s * s) * Math.pow(1.5, cycleOf(sector));
+  return (1 + 0.3 * s + 0.02 * s * s) * Math.pow(1.5, cycleOf(sector));
 }
 
 /** Multiplicador de daño de los enemigos según el sector. */
 export function dmgMul(sector) {
   const s = sector - 1;
-  return (1 + 0.09 * s + 0.0015 * s * s) * Math.pow(1.3, cycleOf(sector));
+  return (1 + 0.11 * s + 0.002 * s * s) * Math.pow(1.3, cycleOf(sector));
 }
 
 /** Multiplicador de velocidad de los enemigos según el sector. */

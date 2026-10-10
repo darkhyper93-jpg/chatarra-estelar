@@ -3,7 +3,7 @@
  * internet. La lista de archivos y la versión las escribe
  * scripts/gen-sw.js (no editarlas a mano).
  */
-const VERSION = '9b774f1a45';
+const VERSION = '89b30a8ab6';
 const CACHE = 'chatarra-estelar-' + VERSION;
 const FILES = [
   // <archivos>

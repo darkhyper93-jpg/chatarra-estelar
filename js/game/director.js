@@ -5,7 +5,7 @@
  */
 import { SECTOR_SECONDS, ZONES, isBossSector, zoneIndexOf, zoneOf } from '../data/zones.js';
 import { BOSS_ORDER } from '../data/bosses.js';
-import { DAILY_GOAL } from '../data/modes.js';
+import { DAILY_GOAL, DIFFICULTIES } from '../data/modes.js';
 import { clamp } from '../core/util.js';
 import { hpMul, dmgMul, speedMul } from './stats.js';
 import { spawnEnemy, spawnSwarm } from './enemies.js';
@@ -19,12 +19,13 @@ export function setDifficulty(run) {
   const zone = zoneOf(s);
   run.zi = zoneIndexOf(s);
   run.zone = zone;
-  run.hpMul = hpMul(s);
-  run.dmgMul = dmgMul(s);
+  const d = run.diff || DIFFICULTIES.normal;
+  run.hpMul = hpMul(s) * d.hp;
+  run.dmgMul = dmgMul(s) * d.dmg;
   run.speedMul = speedMul(s);
   run.ebDmg = 10 * run.dmgMul;
   run.bulletSpeed = (zone.bulletSpeed || 1) * (1 + Math.min(0.5, (s - 1) * 0.012));
-  run.fireMul = f.fireRate * Math.min(1.4, 1 + (s - 1) * 0.02);
+  run.fireMul = f.fireRate * d.fire * Math.min(1.4, 1 + (s - 1) * 0.02);
   run.eliteChance = f.eliteChance + (s >= 6 ? Math.min(0.03, 0.003 * (s - 5)) : 0);
 }
 

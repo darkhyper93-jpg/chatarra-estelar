@@ -11,7 +11,7 @@ export const ENEMIES = {
   torreta:       { name: 'Torreta',        hp: 70,  r: 17, speed: 70,  xp: 3,   contact: 18, score: 35, color: '#ff6fb1', desc: 'Se frena arriba y te dispara.' },
   enjambre:      { name: 'Enjambre',       hp: 6,   r: 7,  speed: 150, xp: 0.5, contact: 10, score: 5,  color: '#ffc06b', desc: 'Llegan en grupo y giran en remolino.' },
   tanque:        { name: 'Tanque',         hp: 170, r: 24, speed: 38,  xp: 6,   contact: 26, score: 70, color: '#d9798f', desc: 'Lento y duro. Al romperse suelta chispas.' },
-  francotirador: { name: 'Francotirador',  hp: 50,  r: 14, speed: 90,  xp: 4,   contact: 16, score: 45, color: '#7fe8ff', desc: 'Marca una línea y dispara un rayo por ahí.' },
+  francotirador: { name: 'Francotirador',  hp: 50,  r: 14, speed: 90,  xp: 4,   contact: 16, score: 45, color: '#7fe8ff', desc: 'Te apunta con una línea. Cuando se pone blanca deja de seguirte: corréte.' },
   minador:       { name: 'Minador',        hp: 60,  r: 16, speed: 60,  xp: 4,   contact: 18, score: 45, color: '#c0e36b', desc: 'Deja minas que explotan en anillo.' },
   bombardero:    { name: 'Bombardero',     hp: 80,  r: 18, speed: 110, xp: 4,   contact: 20, score: 50, color: '#ff9e6b', desc: 'Cruza de lado a lado soltando bombas.' },
   escudero:      { name: 'Escudero',       hp: 90,  r: 18, speed: 55,  xp: 5,   contact: 20, score: 60, color: '#9fb4ff', desc: 'Su escudo frena los disparos. Rompelo o atacalo con área.' },

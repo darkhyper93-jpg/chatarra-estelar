@@ -30,7 +30,7 @@ export function describe(run, kind, id) {
   return { kind: 'scrap', id: 'scrap', name: 'Botín de emergencia', desc: '+' + scrapBonus(run) + ' kg de chatarra.', tag: 'Suministro' };
 }
 
-const scrapBonus = run => Math.round(8 + run.sector * 0.8);
+const scrapBonus = run => Math.round(5 + run.sector * 0.4);
 
 /** Todas las opciones posibles ahora mismo, con su peso (probabilidad relativa). */
 export function candidatePool(run) {

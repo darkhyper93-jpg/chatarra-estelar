@@ -102,10 +102,19 @@ export function drawRun(ctx, run, opts = {}) {
       ctx.globalAlpha = 0.08 + 0.06 * k;
       ctx.beginPath(); ctx.moveTo(0, 0); ctx.arc(0, 0, b.len, 0, b.spin * b.active, b.spin < 0); ctx.closePath(); ctx.fill();
     }
-    ctx.globalAlpha = 0.25 + 0.5 * Math.abs(Math.sin(t * 16));
-    ctx.fillStyle = b.color;
-    const w = Math.max(2, b.w * (b.fake ? 1 : 0.18 + k * 0.25));
-    ctx.fillRect(0, -w / 2, b.len, w);
+    if (b.locked) {
+      // Fijado: ya no te sigue. Línea firme con borde blanco = ¡corréte!
+      ctx.globalAlpha = 0.9;
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, -b.w * 0.32, b.len, b.w * 0.64);
+      ctx.fillStyle = b.color;
+      ctx.fillRect(0, -b.w * 0.22, b.len, b.w * 0.44);
+    } else {
+      ctx.globalAlpha = 0.25 + 0.5 * Math.abs(Math.sin(t * 16));
+      ctx.fillStyle = b.color;
+      const w = Math.max(2, b.w * (b.fake ? 1 : 0.18 + k * 0.25));
+      ctx.fillRect(0, -w / 2, b.len, w);
+    }
     ctx.restore();
   }
 

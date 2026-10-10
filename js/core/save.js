@@ -22,7 +22,7 @@ export function defaultSave() {
     seen: { enemies: {}, bosses: {}, weapons: {}, passives: {} },
     stats: { runs: 0, kills: 0, bossKills: 0, scrapTotal: 0, playTime: 0, evolved: {}, dailyDone: 0, bossRushBest: 0, maxCombo: 0 },
     daily: { date: '', best: 0, done: false, streak: 0, lastDone: '' },
-    settings: { sfx: 0.8, music: 0.5, vibrate: true, shake: true, dmgNumbers: true, sens: 1.3 },
+    settings: { sfx: 0.8, music: 0.5, vibrate: true, shake: true, dmgNumbers: true, sens: 1.3, difficulty: 'normal' },
     tutorial: { move: false, levelup: false, evolve: false },
   };
 }

@@ -7,7 +7,7 @@ import { createRng } from '../core/rng.js';
 import { clamp, compact } from '../core/util.js';
 import { SHIPS } from '../data/ships.js';
 import { WEAPON_IDS } from '../data/weapons.js';
-import { mergeFlags } from '../data/modes.js';
+import { mergeFlags, DIFFICULTIES } from '../data/modes.js';
 import { firstSectorOfZone, zoneOf } from '../data/zones.js';
 import { baseStats, recomputeStats, xpNeed } from './stats.js';
 import { setDifficulty, updateDirector } from './director.js';
@@ -36,6 +36,7 @@ export function createRun(opts) {
 
   const run = {
     mode, seed, W: WORLD_W, H, rng: createRng(seed), noFx: !!opts.noFx, god: !!opts.god,
+    diffId: mode === 'daily' ? 'normal' : (DIFFICULTIES[opts.difficulty] ? opts.difficulty : 'normal'),
     hangar: Object.assign({}, save.hangar), settings: save.settings || {},
     bossesBefore: Object.assign({}, save.bosses), mods, flags: mergeFlags(mods),
     time: 0, sector: firstSectorOfZone(startZone), sectorT: 0, spawnT: 1.4, hazardT: 4,
@@ -52,6 +53,7 @@ export function createRun(opts) {
     dailyDone: false, won: false, startZone,
     xpNeed,
   };
+  run.diff = DIFFICULTIES[run.diffId];
   run.spawn = (type, x, y, o) => spawnEnemy(run, type, x, y, o);
   run.later = (t, fn) => run.timers.push({ t, fn, boss: run.boss });
 

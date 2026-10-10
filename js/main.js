@@ -183,6 +183,7 @@ function startRun(opts) {
   run = createRun({
     save: app.save,
     mode,
+    difficulty: app.save.settings.difficulty,
     startZone: opts.startZone || 0,
     daily: mode === 'daily' ? dailyFor(todayKey()) : null,
     H: worldH,
@@ -234,7 +235,9 @@ function endRun(quit) {
   if (!run) return;
   run.quit = !!quit;
   const res = finishRun(app.save, run, todayKey());
+  res.achievements = (run.newAch || []).concat(res.achievements);
   app.persist();
+  $('toast').innerHTML = '';
   state = 'over';
   returnTo = 'over';
   $('hud').hidden = true;
@@ -309,7 +312,11 @@ function frame(now) {
     if (achT <= 0) {
       achT = 2;
       const fresh = checkAchievements(app.save, run);
-      if (fresh.length) { app.persist(); fresh.forEach(a => app.announceAchievement(a)); }
+      if (fresh.length) {
+        app.persist();
+        run.newAch = (run.newAch || []).concat(fresh);
+        fresh.forEach(a => app.announceAchievement(a));
+      }
     }
     if (run.phase === 'over') endRun(false);
     else if (needsChoice(run)) openChoiceScreen();

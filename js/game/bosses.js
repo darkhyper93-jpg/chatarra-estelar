@@ -7,6 +7,14 @@ import { BOSSES } from '../data/bosses.js';
 import { clamp, segDist2, TAU } from '../core/util.js';
 import { addBeam, drop, dropXP, hitPlayer } from './combat.js';
 import { shoot, aimAt, spawnEnemy } from './enemies.js';
+
+/** Los jefes pegan mucho más fuerte que los enemigos comunes: hay que esquivarlos. */
+export const BOSS_HIT = 1.9;
+
+/** Bala de jefe: igual que shoot() pero con el daño multiplicado por BOSS_HIT. */
+function bshoot(run, x, y, ang, speed, o = {}) {
+  return shoot(run, x, y, ang, speed, Object.assign({}, o, { dmg: (o.dmg || 1) * BOSS_HIT }));
+}
 import { banner, burst, emit, explode, ring, sfx, shake } from './fx.js';
 
 const ENTER = 1.8; // segundos que tarda en entrar a la pantalla
@@ -22,14 +30,14 @@ function ringShot(run, b, n, speed, o = {}) {
       let d = Math.abs(((a - o.gapAng + Math.PI * 3) % TAU) - Math.PI);
       if (d < (o.gap / n) * Math.PI) continue;
     }
-    shoot(run, b.x, b.y, a, speed, o);
+    bshoot(run, b.x, b.y, a, speed, o);
   }
 }
 
 /** Abanico de n balas apuntado al jugador. */
 function fanShot(run, b, n, spread, speed, o = {}) {
   const a0 = aimAt(run, b.x, b.y);
-  for (let i = 0; i < n; i++) shoot(run, b.x, b.y, a0 + (i - (n - 1) / 2) * spread, speed, o);
+  for (let i = 0; i < n; i++) bshoot(run, b.x, b.y, a0 + (i - (n - 1) / 2) * spread, speed, o);
 }
 
 /** Empieza una espiral que dura `dur` segundos. */
@@ -45,7 +53,7 @@ function updateSpiral(run, b, dt) {
   s.acc -= dt;
   while (s.acc <= 0) {
     s.acc += s.rate;
-    for (let i = 0; i < s.arms; i++) shoot(run, b.x, b.y, s.ang + (i / s.arms) * TAU, s.speed, s.o);
+    for (let i = 0; i < s.arms; i++) bshoot(run, b.x, b.y, s.ang + (i / s.arms) * TAU, s.speed, s.o);
   }
   if (s.t <= 0) b.spiral = null;
 }
@@ -101,7 +109,7 @@ const DEFS = {
       ] },
       { at: 0.5, gap: 1.9, attacks: [
         (r, b) => { for (let i = 0; i < 5; i++) spawnEnemy(r, 'huevo', clamp(b.x + (i - 2) * 60, 30, r.W - 30), b.y + 40, { summon: true }); sfx(r, 'egg'); },
-        (r, b) => { for (let i = 0; i < 14; i++) shoot(r, r.rng.range(20, r.W - 20), -10, Math.PI / 2, 60, { ay: 160, r: 7, color: '#ffb547' }); },
+        (r, b) => { for (let i = 0; i < 14; i++) bshoot(r, r.rng.range(20, r.W - 20), -10, Math.PI / 2, 60, { ay: 160, r: 7, color: '#ffb547' }); },
         (r, b) => sweep(r, b, 0.8, 1),
         (r, b) => startSpiral(b, 2, 4, 140, 0.11, 2),
       ] },
@@ -176,13 +184,13 @@ const DEFS = {
     phases: [
       { at: 1, gap: 2.2, attacks: [
         (r, b) => { const a = b.arms.find(x => !x.dead && !x.slam); if (a) { a.slam = { t: 0, x: clamp(r.player.x, 30, r.W - 30) }; addBeam(r, { x: a.slam.x, y: b.y, ang: Math.PI / 2, warn: 1.1, active: 0.01, w: 50, fake: true, color: '#d6a983' }); sfx(r, 'charge'); } else ringShot(r, b, 18, 140); },
-        (r, b) => { for (let i = 0; i < 9; i++) shoot(r, b.x, b.y + 20, -Math.PI / 2 + r.rng.range(-1.1, 1.1), r.rng.range(160, 240), { ay: 230, r: 7, color: '#d6a983' }); },
+        (r, b) => { for (let i = 0; i < 9; i++) bshoot(r, b.x, b.y + 20, -Math.PI / 2 + r.rng.range(-1.1, 1.1), r.rng.range(160, 240), { ay: 230, r: 7, color: '#d6a983' }); },
         (r, b) => { for (const a of b.arms) if (!a.dead && !a.slam) fanShot(r, a, 3, 0.2, 210); if (b.armsAlive === 0) fanShot(r, b, 7, 0.15, 220); },
         (r, b) => summon(r, b, 'minador', 1),
       ] },
       { at: 0.5, gap: 1.6, enter: (r, b) => { b.vx *= 1.4; }, attacks: [
         (r, b) => { for (const a of b.arms) if (!a.dead && !a.slam) { a.slam = { t: 0, x: clamp(r.player.x + r.rng.range(-40, 40), 30, r.W - 30) }; addBeam(r, { x: a.slam.x, y: b.y, ang: Math.PI / 2, warn: 1.1, active: 0.01, w: 50, fake: true, color: '#d6a983' }); } if (b.armsAlive === 0) startSpiral(b, 2, 3, 150); sfx(r, 'charge'); },
-        (r, b) => { for (let i = 0; i < 14; i++) shoot(r, b.x, b.y + 20, -Math.PI / 2 + r.rng.range(-1.2, 1.2), r.rng.range(160, 260), { ay: 230, r: 7, color: '#d6a983' }); },
+        (r, b) => { for (let i = 0; i < 14; i++) bshoot(r, b.x, b.y + 20, -Math.PI / 2 + r.rng.range(-1.2, 1.2), r.rng.range(160, 260), { ay: 230, r: 7, color: '#d6a983' }); },
         (r, b) => { ringShot(r, b, 22, 140); for (const a of b.arms) if (!a.dead) fanShot(r, a, 5, 0.18, 220); },
       ] },
     ],
@@ -239,13 +247,13 @@ const DEFS = {
       // Rayo que une a las gemelas
       if (both && b.linkW > 4 && r.phase === 'play' && r.player.inv <= 0) {
         const p = r.player, rr = b.linkW / 2 + p.r * 0.5;
-        if (segDist2(p.x, p.y, b.x, b.y, t.x, t.y) < rr * rr) hitPlayer(r, 14 * r.dmgMul);
+        if (segDist2(p.x, p.y, b.x, b.y, t.x, t.y) < rr * rr) hitPlayer(r, 10 * r.dmgMul);
       }
     },
     phases: [
       { at: 1, gap: 2.1, attacks: [
         (r, b) => { if (!b.dead) ringShot(r, b, 14, 130, { color: '#9fb4ff' }); if (!b.twin.dead) fanShot(r, b.twin, 5, 0.18, 220, { color: '#ffd166' }); },
-        (r, b) => { for (const t of [b, b.twin]) if (!t.dead) addBeam(r, { follow: t, ang: aimAt(r, t.x, t.y), track: 1.4, warn: 1.1, active: 0.3, w: 10, color: t.color }); sfx(r, 'charge'); },
+        (r, b) => { for (const t of [b, b.twin]) if (!t.dead) addBeam(r, { follow: t, ang: aimAt(r, t.x, t.y), track: 1.4, warn: 1.1, active: 0.3, w: 10, dmg: 34 * r.dmgMul, color: t.color }); sfx(r, 'charge'); },
         (r, b) => { b.linkPulse = 2.6; sfx(r, 'zap'); },
         (r, b) => { if (!b.twin.dead) ringShot(r, b.twin, 14, 130, { color: '#ffd166' }); if (!b.dead) fanShot(r, b, 5, 0.18, 220, { color: '#9fb4ff' }); },
       ] },
@@ -267,18 +275,18 @@ const DEFS = {
     phases: [
       { at: 1, gap: 2.3, attacks: [
         (r, b) => ringShot(r, b, 28, 120, { gap: 5, gapAng: r.rng.range(0, TAU), color: '#b9a0ff' }),
-        (r, b) => { addBeam(r, { follow: b, ang: aimAt(r, b.x, b.y), track: 1.5, warn: 1.4, active: 0.9, w: 26, dmg: 30 * r.dmgMul, color: '#b9a0ff' }); sfx(r, 'charge'); },
+        (r, b) => { addBeam(r, { follow: b, ang: aimAt(r, b.x, b.y), track: 1.5, warn: 1.4, active: 0.9, w: 26, dmg: 48 * r.dmgMul, color: '#b9a0ff' }); sfx(r, 'charge'); },
         (r, b) => summon(r, b, 'ojito', 3, 70),
         (r, b) => startSpiral(b, 2, 4, 130, 0.12, 2.2, { color: '#d7c9ff' }),
       ] },
       { at: 0.65, gap: 2, enter: (r) => banner(r, 'GRAVEDAD', 'El Ojo te atrae', 1.4, '#b9a0ff'), attacks: [
         (r, b) => { ringShot(r, b, 30, 125, { gap: 5, gapAng: r.rng.range(0, TAU), color: '#b9a0ff' }); r.later(0.6, () => ringShot(r, b, 30, 125, { gap: 5, gapAng: r.rng.range(0, TAU), color: '#b9a0ff' })); },
-        (r, b) => { addBeam(r, { follow: b, ang: aimAt(r, b.x, b.y), track: 1.7, warn: 1.3, active: 1.0, w: 30, dmg: 30 * r.dmgMul, color: '#b9a0ff' }); sfx(r, 'charge'); },
+        (r, b) => { addBeam(r, { follow: b, ang: aimAt(r, b.x, b.y), track: 1.7, warn: 1.3, active: 1.0, w: 30, dmg: 48 * r.dmgMul, color: '#b9a0ff' }); sfx(r, 'charge'); },
         (r, b) => summon(r, b, 'ojito', 4, 60),
         (r, b) => startSpiral(b, 2.4, 5, 125, 0.12, -2, { color: '#d7c9ff' }),
       ] },
       { at: 0.3, gap: 1.8, enter: (r) => banner(r, '¡ÚLTIMA MIRADA!', 'Aguantá', 1.4, '#b9a0ff'), attacks: [
-        (r, b) => { for (const s of [-0.5, 0.5]) addBeam(r, { follow: b, ang: aimAt(r, b.x, b.y) + s, track: 1.2, warn: 1.2, active: 0.8, w: 22, dmg: 30 * r.dmgMul, color: '#b9a0ff' }); sfx(r, 'charge'); },
+        (r, b) => { for (const s of [-0.5, 0.5]) addBeam(r, { follow: b, ang: aimAt(r, b.x, b.y) + s, track: 1.2, warn: 1.2, active: 0.8, w: 22, dmg: 48 * r.dmgMul, color: '#b9a0ff' }); sfx(r, 'charge'); },
         (r, b) => ringShot(r, b, 32, 130, { gap: 5, gapAng: r.rng.range(0, TAU), color: '#b9a0ff' }),
         (r, b) => summon(r, b, 'ojito', 3, 70),
       ] },
@@ -304,7 +312,7 @@ const DEFS = {
         (r, b) => fanShot(r, b, 5, 0.3, 170, { r: 9, color: '#bff4ff', split: { t: 0.8, n: 3, spread: 0.35 } }),
         (r, b) => { for (let i = 0; i < 3; i++) spawnEnemy(r, 'huevo', clamp(b.x + (i - 1) * 70, 30, r.W - 30), b.y + 40, { summon: true }); hammers(r, 3); },
         (r, b) => petals(r, b, 4),
-        (r, b) => { addBeam(r, { follow: b, ang: aimAt(r, b.x, b.y), track: 1.6, warn: 1.2, active: 0.9, w: 26, dmg: 30 * r.dmgMul, color: '#ff5d73' }); sfx(r, 'charge'); },
+        (r, b) => { addBeam(r, { follow: b, ang: aimAt(r, b.x, b.y), track: 1.6, warn: 1.2, active: 0.9, w: 26, dmg: 48 * r.dmgMul, color: '#ff5d73' }); sfx(r, 'charge'); },
         (r, b) => { flare(r, r.player.y); startSpiral(b, 2, 4, 140, 0.1, -2.4, { color: '#ffb547' }); },
       ] },
     ],
@@ -316,7 +324,7 @@ const DEFS = {
 /** Rayo que barre hacia un costado. El aviso muestra la zona que va a cubrir. */
 function sweep(r, b, spin, active) {
   const dir = r.rng.chance(0.5) ? 1 : -1;
-  addBeam(r, { follow: b, ang: Math.PI / 2, spin: spin * dir, warn: 1, active, w: 14, dmg: 16 * r.dmgMul, color: '#ffb547' });
+  addBeam(r, { follow: b, ang: Math.PI / 2, spin: spin * dir, warn: 1, active, w: 14, dmg: 26 * r.dmgMul, color: '#ffb547' });
   sfx(r, 'charge');
 }
 
@@ -324,7 +332,7 @@ function iceWall(r, b, dir) {
   const gapW = 78, gx = r.rng.range(gapW, r.W - gapW);
   for (let x = 10; x < r.W; x += 22) {
     if (Math.abs(x - gx) < gapW / 2) continue;
-    shoot(r, x, b.y + 40, Math.PI / 2, 105 * dir, { r: 7, color: '#bff4ff' });
+    bshoot(r, x, b.y + 40, Math.PI / 2, 105 * dir, { r: 7, color: '#bff4ff' });
   }
   sfx(r, 'ice');
 }
@@ -333,7 +341,7 @@ function petals(r, b, k) {
   const n = 24, off = r.rng.range(0, TAU);
   for (let i = 0; i < n; i++) {
     const a = off + (i / n) * TAU;
-    shoot(r, b.x, b.y, a, 80 + 70 * Math.abs(Math.sin((k * a) / 2)), { color: '#ff9bd0' });
+    bshoot(r, b.x, b.y, a, 80 + 70 * Math.abs(Math.sin((k * a) / 2)), { color: '#ff9bd0' });
   }
 }
 
@@ -346,14 +354,14 @@ function teleport(r, b) {
 function hammers(r, n) {
   const cols = r.rng.shuffle([0, 1, 2, 3, 4, 5, 6, 7]).slice(0, n);
   const colW = r.W / 8;
-  for (const c of cols) addBeam(r, { x: c * colW + colW / 2, y: -20, ang: Math.PI / 2, warn: 1.1, active: 0.35, w: colW * 0.8, dmg: 24 * r.dmgMul, color: '#ffd166', kind: 'hammer' });
+  for (const c of cols) addBeam(r, { x: c * colW + colW / 2, y: -20, ang: Math.PI / 2, warn: 1.1, active: 0.35, w: colW * 0.8, dmg: 40 * r.dmgMul, color: '#ffd166', kind: 'hammer' });
   sfx(r, 'charge');
 }
 
 /** Llamarada horizontal que cruza toda la pantalla (también se usa en la zona 8). */
 export function flare(r, y) {
   y = clamp(y, r.H * 0.3, r.H - 20);
-  addBeam(r, { x: -20, y, ang: 0, len: r.W + 40, warn: 1.3, active: 0.45, w: 22, dmg: 22 * r.dmgMul, color: '#ffb547', kind: 'flare' });
+  addBeam(r, { x: -20, y, ang: 0, len: r.W + 40, warn: 1.3, active: 0.45, w: 22, dmg: 35 * r.dmgMul, color: '#ffb547', kind: 'flare' });
   sfx(r, 'charge');
 }
 
@@ -371,7 +379,7 @@ function makeBossPart(run, main, ox, oy, hpBase, r) {
   const hp = hpBase * main.hpScale;
   const part = {
     id: ++run.eid, type: 'boss', isBoss: true, part: true, bossId: main.bossId, x: main.x + ox, y: main.y + oy,
-    r, hp, maxHp: hp, t: 0, flash: 0, color: main.color, contact: 24 * run.dmgMul, dead: false, stun: 0,
+    r, hp, maxHp: hp, t: 0, flash: 0, color: main.color, contact: 40 * run.dmgMul, dead: false, stun: 0,
   };
   run.enemies.push(part);
   main.parts.push(part);
@@ -381,11 +389,11 @@ function makeBossPart(run, main, ox, oy, hpBase, r) {
 /** Hace aparecer al jefe indicado. */
 export function spawnBoss(run, bossId) {
   const d = BOSSES[bossId];
-  const hpScale = run.hpMul * (1 + 0.05 * run.zi) * run.flags.enemyHp;
+  const hpScale = run.hpMul * (1 + 0.22 * run.zi) * run.flags.enemyHp;
   const b = {
     id: ++run.eid, type: 'boss', isBoss: true, bossId, name: d.name, x: run.W / 2, y: -100, homeY: Math.max(run.H * 0.25, 180),
     r: d.r, hp: d.hp * hpScale, maxHp: d.hp * hpScale, hpScale, color: d.color, t: 0, flash: 0,
-    contact: 30 * run.dmgMul, vx: 55 + run.zi * 5, phase: 0, patT: 1.6, pat: 0, entered: false,
+    contact: 50 * run.dmgMul, vx: 55 + run.zi * 5, phase: 0, patT: 1.6, pat: 0, entered: false,
     parts: [], dead: false, stun: 0, dmgTaken: 1,
   };
   run.enemies.push(b);

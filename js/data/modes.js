@@ -4,6 +4,19 @@
 import { createRng, hashString } from '../core/rng.js';
 import { SHIP_IDS } from './ships.js';
 
+/**
+ * Niveles de dificultad. Multiplican la vida (hp), el daño (dmg) y la
+ * frecuencia de disparo (fire) de los enemigos, y la chatarra que se junta.
+ * Pesadilla se abre al vencer a El Forjador.
+ */
+export const DIFFICULTIES = {
+  facil:     { name: 'Fácil',     hp: 0.6, dmg: 0.65, fire: 0.85, scrap: 0.75, desc: 'Para aprender. Menos chatarra.' },
+  normal:    { name: 'Normal',    hp: 1,   dmg: 1,    fire: 1,    scrap: 1,    desc: 'La experiencia pensada.' },
+  dificil:   { name: 'Difícil',   hp: 1.6, dmg: 1.4,  fire: 1.15, scrap: 1.4,  desc: 'Enemigos más duros. +40% de chatarra.' },
+  pesadilla: { name: 'Pesadilla', hp: 2.5, dmg: 1.9,  fire: 1.3,  scrap: 2,    desc: 'Sólo para expertos. Doble chatarra.', unlock: 'forjador' },
+};
+export const DIFFICULTY_IDS = Object.keys(DIFFICULTIES);
+
 export const DAILY_GOAL = 10; // sector al que hay que llegar para completar el desafío
 export const DAILY_REWARD = 300;
 export const BOSSRUSH_UNLOCK = 'desguace'; // jefe que hay que vencer para abrir el Modo Jefes

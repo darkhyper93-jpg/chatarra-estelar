@@ -168,3 +168,35 @@ test('el jugador muere, revive con la cápsula y la partida termina', () => {
   for (let i = 0; i < 200; i++) step(run);
   assert.equal(run.phase, 'over');
 });
+
+test('la dificultad elegida cambia la vida, el daño y la chatarra', () => {
+  const normal = newRun({ difficulty: 'normal' });
+  const dificil = newRun({ difficulty: 'dificil' });
+  const facil = newRun({ difficulty: 'facil' });
+  assert.ok(dificil.hpMul > normal.hpMul && facil.hpMul < normal.hpMul);
+  assert.ok(dificil.dmgMul > normal.dmgMul);
+  assert.ok(dificil.player.stats.scrapMul > normal.player.stats.scrapMul);
+  const daily = newRun({ mode: 'daily', daily: { ship: 'gorrion', mods: [], seed: 1 }, difficulty: 'pesadilla' });
+  assert.equal(daily.diffId, 'normal', 'el desafío diario siempre es Normal');
+  assert.equal(newRun({ difficulty: 'inventada' }).diffId, 'normal');
+});
+
+test('los láseres que apuntan se fijan antes de disparar y se pueden esquivar', async () => {
+  const { addBeam, LOCK_TIME } = await import('../../js/game/combat.js');
+  const run = newRun();
+  run.spawnT = 1e9; // sin enemigos que molesten
+  const p = run.player;
+  p.x = 200; p.y = 600; p.inv = 0;
+  const b = addBeam(run, { x: 200, y: 100, ang: Math.PI / 2 + 0.3, track: 3, warn: 1.2, active: 0.5, w: 20 });
+  let moved = false;
+  const hp0 = p.hp;
+  for (let i = 0; i < 120 && !b.dead; i++) {
+    run.input.tx = null;
+    if (b.locked && !moved) { assert.ok(b.t < b.warn, 'se fija antes de disparar'); p.x += 90; moved = true; }
+    if (!moved) { p.x = 200; p.y = 600; }
+    step(run);
+  }
+  assert.ok(moved, 'el rayo llegó a fijarse');
+  assert.ok(LOCK_TIME >= 0.4, 'hay tiempo de reacción');
+  assert.equal(p.hp, hp0, 'moverse después de que se fija evita el golpe');
+});

@@ -74,7 +74,7 @@ export function killEnemy(run, e) {
   const luck = p.stats.luck;
   const xp = def.xp * xpMul(run.sector) * run.flags.xp * (e.elite ? 5 : 1);
   if (xp > 0) dropXP(run, e.x, e.y, xp);
-  const scrapChance = (e.type === 'asteroide' ? 0.25 : 0.1) + luck * 0.06 + (e.type === 'tanque' ? 0.35 : 0);
+  const scrapChance = (e.type === 'asteroide' ? 0.15 : 0.045) + luck * 0.04 + (e.type === 'tanque' ? 0.25 : 0);
   if (run.rng.chance(scrapChance)) drop(run, e.x, e.y, 'scrap', run.rng.range(1, 2) * (1 + run.sector * 0.02));
   if (!run.flags.noHeal && run.rng.chance(0.012 + (e.type === 'tanque' ? 0.08 : 0))) drop(run, e.x, e.y, 'heal', 0.25);
   if (run.rng.chance(0.004 + luck * 0.003)) drop(run, e.x, e.y, 'magnet', 0);
@@ -93,7 +93,7 @@ export function killEnemy(run, e) {
       break;
     case 'carguero':
       run.stats.convoys++;
-      for (let i = 0; i < 6; i++) drop(run, e.x, e.y, 'scrap', 2 + run.sector * 0.3);
+      for (let i = 0; i < 5; i++) drop(run, e.x, e.y, 'scrap', 2 + run.sector * 0.15);
       drop(run, e.x, e.y, 'chest', 0);
       banner(run, 'CONVOY SAQUEADO', 'Recogé la carga', 1.8, '#ffb547');
       sfx(run, 'big');
@@ -294,19 +294,25 @@ export function mkBullet(x, y, vx, vy, r, dmg, color) {
   return { x, y, vx, vy, r, dmg, color, t: 0, dead: false };
 }
 
+/** Segundos entre que un rayo deja de apuntarte y dispara. */
+export const LOCK_TIME = 0.55;
+
 /** Rayos enemigos: primero avisan con una línea fina y después queman. */
 export function updateBeams(run, dt) {
   const p = run.player;
   for (const b of run.beams) {
     if (b.dead) continue;
     b.t += dt;
-    if (b.follow) {
+    // Los rayos que apuntan dejan de seguirte LOCK_TIME segundos antes de disparar:
+    // así siempre hay tiempo para correrse.
+    b.locked = !!b.track && b.t >= b.warn - LOCK_TIME;
+    if (b.follow && !b.locked) {
       if (b.follow.dead) { b.dead = true; continue; }
       b.x = b.follow.x + (b.ox || 0);
       b.y = b.follow.y + (b.oy || 0);
     }
     if (b.t < b.warn) {
-      if (b.track) {
+      if (b.track && !b.locked) {
         const want = Math.atan2(p.y - b.y, p.x - b.x);
         let d = want - b.ang;
         while (d > Math.PI) d -= TAU;

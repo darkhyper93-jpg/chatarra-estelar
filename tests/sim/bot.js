@@ -5,11 +5,36 @@
  */
 import { step, needsChoice } from '../../js/game/run.js';
 import { rollChoices, applyChoice } from '../../js/game/upgrades.js';
+import { WEAPONS } from '../../js/data/weapons.js';
 
 const PRIORITY = { evo: 100, weapon: 10, passive: 8, heal: 5, scrap: 1 };
 
+/**
+ * Estrategia "inteligente", como juega una persona que ya conoce el juego:
+ * va directo a las evoluciones (arma al 7 + su pasiva) y a las pasivas fuertes.
+ */
+export function smartPick(run, cards) {
+  const p = run.player;
+  const keys = new Set(p.weapons.filter(w => !w.evolved).map(w => WEAPONS[w.id].evo.needs));
+  const CORE = new Set(['gatillo', 'calibre', 'blindaje', 'nanobots', 'multi', 'suerte']);
+  const score = c => {
+    if (c.kind === 'evo') return 1000;
+    if (c.kind === 'heal') return p.hp < p.stats.maxHp * 0.5 ? 70 : 2;
+    if (c.kind === 'scrap') return 1;
+    if (c.kind === 'weapon') {
+      if (c.from) return 45 + (p.passives[WEAPONS[c.id].evo.needs] ? 20 : 0);
+      return p.weapons.length < 3 ? 35 : 4;
+    }
+    if (keys.has(c.id)) return 55;
+    if (c.from) return CORE.has(c.id) ? 30 : 15;
+    return CORE.has(c.id) ? 25 : 8;
+  };
+  return cards.reduce((a, b) => (score(b) > score(a) ? b : a));
+}
+
 /** Elige la mejor carta según la prioridad del bot. */
 export function botPick(run, cards) {
+  if (run.smartBot) return smartPick(run, cards);
   let best = cards[0], bs = -1;
   for (const c of cards) {
     let s = PRIORITY[c.kind] || 0;
@@ -63,10 +88,20 @@ export function steer(run) {
   // Quedarse en la parte de abajo y cerca del centro
   fy += (run.H * 0.8 - p.y) / 200;
   fx += (run.W / 2 - p.x) / 400;
+  // Un jugador inteligente junta los cristales: ir hacia el más cercano si no hay peligro cerca
+  if (run.smartBot && Math.hypot(fx, fy) < 0.6) {
+    let best = null, bd = 260 * 260;
+    for (const o of run.pickups) {
+      const d = (o.x - p.x) ** 2 + (o.y - p.y) ** 2;
+      if (o.y > run.H * 0.3 && d < bd) { bd = d; best = o; }
+    }
+    if (best) { const d = Math.sqrt(bd) || 1; fx += ((best.x - p.x) / d) * 1.2; fy += ((best.y - p.y) / d) * 1.2; }
+  }
   // Ir hacia el enemigo más bajo para apuntarle
   let tgt = null;
   for (const e of run.enemies) if (!e.dead && e.y > 0 && (!tgt || e.y > tgt.y)) tgt = e;
-  if (tgt) fx += Math.sign(tgt.x - p.x) * 0.3;
+  if (run.smartBot && run.boss && !run.boss.invuln) tgt = run.boss; // apuntarle al jefe
+  if (tgt) fx += Math.max(-1, Math.min(1, (tgt.x - p.x) / 40)) * (run.smartBot ? 0.8 : 0.3);
   run.input.tx = p.x + fx * 120;
   run.input.ty = p.y + fy * 120;
 }

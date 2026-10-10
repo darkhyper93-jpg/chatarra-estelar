@@ -154,7 +154,7 @@ export function renderPause(app, run) {
 export function renderOver(app, run, res) {
   const s = $('s-over');
   const title = run.won ? '¡Venciste a los 8 jefes!' : run.mode === 'bossrush' ? `Caíste ante el jefe ${run.rushIndex + 1}` : `Llegaste al sector ${run.sector}`;
-  const eyebrow = run.quit ? 'Regreso a la base' : run.won ? 'Victoria' : 'Nave destruida';
+  const eyebrow = (run.quit ? 'Regreso a la base' : run.won ? 'Victoria' : 'Nave destruida') + (run.diffId !== 'normal' ? ' · ' + run.diff.name : '');
   const ach = res.achievements.length
     ? `<div class="newach">${res.achievements.map(a => `<div>${icon('trophy', 20)}${esc(a.name)}<small>+${fmt(a.reward)} kg</small></div>`).join('')}</div>` : '';
   const badges = [res.recordSector ? '<span class="badge">Nuevo récord de sector</span>' : '', res.recordScore && !res.recordSector ? '<span class="badge">Nuevo récord de puntos</span>' : '', res.dailyBonus ? '<span class="badge gold">Desafío completado</span>' : ''].join('');
