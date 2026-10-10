@@ -5,6 +5,12 @@
  * de un dispositivo a otro.
  */
 
+import { SHIPS } from '../data/ships.js';
+import { GALAXIES } from '../data/zones.js';
+import { HANGAR, hangarMax } from '../data/hangar.js';
+import { TREES } from '../data/trees.js';
+import { DIFFICULTIES } from '../data/modes.js';
+
 // El juego antes se llamaba «Chatarra Estelar». La clave del guardado queda
 // igual a propósito, para que nadie pierda su progreso con el cambio de nombre.
 export const SAVE_KEY = 'chatarra-estelar-save';
@@ -53,11 +59,49 @@ export function migrate(raw) {
   const s = mergeShape(defaultSave(), raw && typeof raw === 'object' ? clone(raw) : {});
   s.v = SAVE_VERSION;
   s.ships.gorrion = true;
-  if (!s.ships[s.ship]) s.ship = 'gorrion';
+  sanitize(s);
   s.scrap = Math.max(0, Math.floor(Number(s.scrap) || 0));
   // Versión 1 del guardado: el récord de sector era de la única galaxia.
   if (s.best.sector && !s.galaxies.best.cinturon) s.galaxies.best.cinturon = s.best.sector;
   return s;
+}
+
+/** Entero entre lo y hi; si no es un número válido, `def`. */
+const intIn = (v, lo, hi, def) => (Number.isFinite(v) ? Math.max(lo, Math.min(hi, Math.floor(v))) : def);
+const numIn = (v, lo, hi, def) => (Number.isFinite(v) ? Math.max(lo, Math.min(hi, v)) : def);
+
+/**
+ * Quita lo que no existe en el juego (naves, mejoras, galaxias inventadas) y
+ * pone los números dentro de su rango. Así un código de progreso roto o
+ * editado a mano no puede dejar el juego sin arrancar.
+ */
+function sanitize(s) {
+  for (const id of Object.keys(s.ships)) if (!SHIPS[id] || s.ships[id] !== true) delete s.ships[id];
+  if (!s.ships[s.ship]) s.ship = 'gorrion';
+  for (const id of Object.keys(s.hangar)) {
+    const h = HANGAR.find(x => x.id === id);
+    const l = h ? intIn(s.hangar[id], 0, hangarMax(h, GALAXIES.length), 0) : 0;
+    if (l > 0) s.hangar[id] = l; else delete s.hangar[id];
+  }
+  for (const ship of Object.keys(s.shipTree)) {
+    const nodes = TREES[ship], tree = s.shipTree[ship];
+    if (!nodes || !tree || typeof tree !== 'object') { delete s.shipTree[ship]; continue; }
+    for (const id of Object.keys(tree)) {
+      const n = nodes.find(x => x.id === id);
+      const l = n ? intIn(tree[id], 0, n.max, 0) : 0;
+      if (l > 0) tree[id] = l; else delete tree[id];
+    }
+  }
+  const ids = new Set(GALAXIES.map(g => g.id));
+  for (const k of ['cleared', 'best']) {
+    for (const id of Object.keys(s.galaxies[k])) if (!ids.has(id) || !Number.isFinite(s.galaxies[k][id])) delete s.galaxies[k][id];
+  }
+  const st = s.settings, d = defaultSave().settings;
+  st.galaxy = intIn(st.galaxy, 0, GALAXIES.length - 1, 0);
+  if (!DIFFICULTIES[st.difficulty]) st.difficulty = 'normal';
+  st.sfx = numIn(st.sfx, 0, 1, d.sfx);
+  st.music = numIn(st.music, 0, 1, d.music);
+  st.sens = numIn(st.sens, 0.8, 2.2, d.sens);
 }
 
 /** Lee la partida guardada. Si no hay o está rota, devuelve una nueva. */
@@ -81,6 +125,8 @@ export function writeSave(storage, save) {
   }
 }
 
+// En el navegador se usa btoa/atob; en las pruebas (Node), Buffer.
+/* global Buffer */
 const toB64 = s => (typeof btoa === 'function' ? btoa(s) : Buffer.from(s, 'binary').toString('base64'));
 const fromB64 = s => (typeof atob === 'function' ? atob(s) : Buffer.from(s, 'base64').toString('binary'));
 

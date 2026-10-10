@@ -189,10 +189,16 @@ export function createAudio() {
     applyVolumes();
   }
 
+  /** Suspende todo el audio mientras el juego no se ve (ahorra batería) y lo retoma al volver. */
+  function sleep(on) {
+    if (!ac) return;
+    try { if (on) ac.suspend(); else ac.resume(); } catch (e) { /* nada */ }
+  }
+
   function stopMusic() {
     music.on = false;
     clearInterval(music.timer);
   }
 
-  return { unlock, play, setVolumes, setMusic, stopMusic, duck, get ready() { return !!ac; } };
+  return { unlock, play, setVolumes, setMusic, stopMusic, duck, sleep, get ready() { return !!ac; } };
 }

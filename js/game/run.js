@@ -7,9 +7,9 @@ import { createRng } from '../core/rng.js';
 import { clamp, compact } from '../core/util.js';
 import { SHIPS } from '../data/ships.js';
 import { WEAPON_IDS } from '../data/weapons.js';
-import { mergeFlags, DIFFICULTIES } from '../data/modes.js';
+import { mergeFlags, DIFFICULTIES, DAILY_HANGAR } from '../data/modes.js';
 import { GALAXIES, firstSectorOfZone, zoneOf } from '../data/zones.js';
-import { baseStats, recomputeStats, xpNeed } from './stats.js';
+import { recomputeStats, xpNeed } from './stats.js';
 import { setDifficulty, updateDirector } from './director.js';
 import { spawnEnemy, updateEnemies } from './enemies.js';
 import { updateBoss } from './bosses.js';
@@ -34,12 +34,15 @@ export function createRun(opts) {
   const startZone = mode === 'campaign' ? (opts.startZone || 0) : 0;
   const galaxy = mode === 'campaign' ? Math.max(0, Math.min(GALAXIES.length - 1, opts.galaxy || 0)) : 0;
   const H = clamp(opts.H || 720, 600, 920);
+  // En el desafío diario todos juegan igual: hangar estándar, sin árbol de nave y sin poder galáctico.
+  const fair = mode === 'daily';
 
   const run = {
     mode, seed, W: WORLD_W, H, rng: createRng(seed), noFx: !!opts.noFx, god: !!opts.god,
-    galaxy, galaxyMul: GALAXIES[galaxy].scrap, galaxyPower: GALAXIES.filter(g => (save.galaxies || { cleared: {} }).cleared[g.id]).length,
+    galaxy, galaxyMul: GALAXIES[galaxy].scrap, galaxyPower: fair ? 0 : GALAXIES.filter(g => (save.galaxies || { cleared: {} }).cleared[g.id]).length,
     diffId: mode === 'daily' ? 'normal' : (DIFFICULTIES[opts.difficulty] ? opts.difficulty : 'normal'),
-    hangar: Object.assign({}, save.hangar), settings: save.settings || {},
+    hangar: Object.assign({}, fair ? DAILY_HANGAR : save.hangar), settings: save.settings || {},
+    dailyKey: mode === 'daily' ? daily.date : null,
     bossesBefore: Object.assign({}, save.bosses), mods, flags: mergeFlags(mods),
     time: 0, sector: firstSectorOfZone(startZone), sectorT: 0, spawnT: 1.4, hazardT: 4,
     phase: 'play', eid: 0,
@@ -56,15 +59,14 @@ export function createRun(opts) {
     xpNeed,
   };
   run.diff = DIFFICULTIES[run.diffId];
-  run.tree = Object.assign({}, (save.shipTree || {})[shipId]);
+  run.tree = fair ? {} : Object.assign({}, (save.shipTree || {})[shipId]);
   run.spawn = (type, x, y, o) => spawnEnemy(run, type, x, y, o);
   run.later = (t, fn) => run.timers.push({ t, fn, boss: run.boss });
 
   const ship = SHIPS[shipId];
-  const st = baseStats(shipId, run.hangar, mods);
   run.player = {
     shipId, color: ship.color, x: WORLD_W / 2, y: H * 0.8, r: 12, tilt: 0,
-    hp: st.maxHp, stats: null, weapons: [{ id: ship.weapon, lvl: 1, evolved: false, t: 0.2, on: 0 }],
+    hp: 1, stats: null, weapons: [{ id: ship.weapon, lvl: 1, evolved: false, t: 0.2, on: 0 }],
     passives: {}, shield: 0, shieldT: 0, inv: 1.2, level: 1, xp: 0, next: xpNeed(1), combo: 0, comboT: 0,
     revives: 0, dead: false,
   };

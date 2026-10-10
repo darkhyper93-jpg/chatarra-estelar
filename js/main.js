@@ -155,7 +155,10 @@ addEventListener('keydown', e => {
 });
 addEventListener('keyup', e => { input.keys[e.key.toLowerCase()] = false; });
 addEventListener('blur', () => { input.keys = {}; input.drag = false; input.tx = null; });
-document.addEventListener('visibilitychange', () => { if (document.hidden && state === 'play') pause(); });
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden && state === 'play') pause();
+  audio.sleep(document.hidden);
+});
 addEventListener('pointerdown', () => audio.unlock(), { capture: true });
 
 function feedInput() {
@@ -229,6 +232,8 @@ function resume() {
   state = 'play';
   run.player.inv = Math.max(run.player.inv, 0.6);
   audio.duck(false);
+  // El navegador suelta el bloqueo de pantalla al salir de la app: lo volvemos a pedir.
+  requestWakeLock();
   if (needsChoice(run)) openChoiceScreen();
 }
 

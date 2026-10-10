@@ -7,7 +7,8 @@ import { fmtTime } from '../core/util.js';
 import { exportCode, importCode, defaultSave } from '../core/save.js';
 import { installedVersion, forceUpdate } from '../core/updates.js';
 
-export const VERSION = '2.0';
+// Mantener igual que "version" en package.json.
+export const VERSION = '2.1';
 
 function toggle(id, on) {
   return `<button class="toggle" id="${id}" role="switch" aria-checked="${on ? 'true' : 'false'}" aria-label="Activar"></button>`;

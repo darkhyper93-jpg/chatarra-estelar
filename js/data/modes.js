@@ -3,6 +3,16 @@
  */
 import { createRng, hashString } from '../core/rng.js';
 import { SHIP_IDS } from './ships.js';
+import { HANGAR } from './hangar.js';
+
+/**
+ * Hangar estándar del Desafío diario: el mismo para todos, sea cual sea su
+ * progreso (más o menos el 60% de cada mejora). Sin esto, el diario sin
+ * mejoras era casi imposible y con las mejoras de cada uno no era justo.
+ */
+export const DAILY_HANGAR = Object.freeze(Object.fromEntries(
+  HANGAR.map(h => [h.id, Math.floor(h.max * 0.6)]).filter(([, l]) => l > 0),
+));
 
 /**
  * Niveles de dificultad. Multiplican la vida (hp), el daño (dmg) y la

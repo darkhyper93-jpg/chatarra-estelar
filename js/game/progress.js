@@ -106,6 +106,8 @@ function mergeSeen(save, run) {
  * Devuelve un resumen para la pantalla final.
  */
 export function finishRun(save, run, todayKey) {
+  // El diario cuenta para el día en que empezó, aunque termine pasada la medianoche.
+  if (run.mode === 'daily' && run.dailyKey) todayKey = run.dailyKey;
   const gal = GALAXIES[run.galaxy || 0];
   const bonus = Math.round(((run.sector - 1) * 3 + run.bossesKilled.length * 25) * (run.mode === 'campaign' ? gal.scrap : 1) + (run.galaxyCleared ? 1000 * gal.scrap : 0));
   const daily = run.mode === 'daily';

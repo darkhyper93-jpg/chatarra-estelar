@@ -27,7 +27,12 @@ export function appFiles() {
   return files.map(f => relative(ROOT, f).split(sep).join('/'));
 }
 
-export function buildSw() {
+/**
+ * Calcula cómo tiene que quedar sw.js (lista de archivos y versión) sin
+ * escribir nada. Las pruebas lo usan para avisar si alguien se olvidó de
+ * correr este script antes de publicar.
+ */
+export function expectedSw() {
   const files = appFiles();
   const hash = createHash('sha256');
   for (const f of files) hash.update(f).update(readFileSync(join(ROOT, f)));
@@ -38,8 +43,14 @@ export function buildSw() {
   const out = src
     .replace(/const VERSION = '[^']*';/, `const VERSION = '${version}';`)
     .replace(/\/\/ <archivos>[\s\S]*?\/\/ <\/archivos>/, `// <archivos>\n${list}\n  // </archivos>`);
-  writeFileSync(swPath, out);
-  return { version, count: files.length };
+  return { version, count: files.length, src, out, swPath };
+}
+
+/** Reescribe sw.js con la lista de archivos y la versión actuales. */
+export function buildSw() {
+  const r = expectedSw();
+  writeFileSync(r.swPath, r.out);
+  return { version: r.version, count: r.count };
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {

@@ -9,7 +9,8 @@ import { DAILY_GOAL, DIFFICULTIES } from '../data/modes.js';
 import { clamp } from '../core/util.js';
 import { hpMul, dmgMul, speedMul } from './stats.js';
 import { spawnEnemy, spawnSwarm, shoot } from './enemies.js';
-import { spawnBoss, flare } from './bosses.js';
+import { spawnBoss } from './bosses.js';
+import { flare } from './boss-attacks.js';
 import { damageEnemy, hitPlayer } from './combat.js';
 import { banner, bolt, emit, ring, sfx, shake } from './fx.js';
 
@@ -56,6 +57,8 @@ export function nextSector(run) {
     banner(run, '¡DESAFÍO COMPLETADO!', 'Seguí para sumar puntos', 2.6, '#8ff0a4');
     emit(run, 'dailyDone', {});
     sfx(run, 'victory');
+    if (run.zi !== prevZone) emit(run, 'zone', { id: run.zone.id });
+    emit(run, 'sector', { sector: run.sector });
     return;
   }
   if (run.zi !== prevZone) emit(run, 'zone', { id: run.zone.id });

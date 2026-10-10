@@ -16,6 +16,8 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - name: Revisión del código (ESLint)
+        run: npm run lint
       - name: Pruebas de lógica y simulaciones
         run: npm test
       - name: Instalar navegador

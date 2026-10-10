@@ -95,3 +95,16 @@ test('balance: sin mejoras se pasa el primer jefe, pero no se llega lejos', () =
   assert.ok(sorted[1] >= 6, 'la mayoría vence al primer jefe: ' + sectors);
   assert.ok(sorted[2] <= 25, 'sin mejoras no se llega muy lejos: ' + sectors);
 });
+
+test('el desafío diario (con el hangar estándar) se puede completar, pero no siempre', () => {
+  let done = 0;
+  const days = ['2026-10-01', '2026-10-02', '2026-10-03', '2026-10-04', '2026-10-05', '2026-10-06', '2026-10-07', '2026-10-08'];
+  for (const key of days) {
+    const run = createRun({ save: defaultSave(), mode: 'daily', daily: dailyFor(key), H: 760, noFx: true });
+    run.smartBot = true;
+    playRun(run, 400, r => { if (r.time % 10 < 1 / 60) healthy(r); });
+    if (run.dailyDone) done++;
+  }
+  assert.ok(done >= 3, `el piloto automático completa varios: ${done}/${days.length}`);
+  assert.ok(done < days.length, 'pero es un desafío: no todos');
+});

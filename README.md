@@ -42,7 +42,7 @@ Queda un ícono como cualquier otra app; se abre en pantalla completa.
 - **12 naves**, cada una con su arma inicial y un rasgo propio.
 - **Árbol de cada nave:** 8 mejoras exclusivas por nave (96 en total) en 4 escalones que se abren a medida que comprás. Sólo funcionan con esa nave. En el último escalón están las más fuertes, como evolucionar el arma sin necesitar la pasiva.
 - **Logros:** 47 logros que dan chatarra. Cuatro naves se desbloquean con logros (completar galaxias o desafíos diarios).
-- **Desafío diario:** todos juegan el mismo día con la misma nave y los mismos dos modificadores. Ideal para competir con amigos.
+- **Desafío diario:** todos juegan el mismo día con la misma nave, los mismos dos modificadores y **el mismo hangar estándar** (las mejoras propias y el árbol no cuentan): gana el que mejor juega. Ideal para competir con amigos.
 - **Modo Jefes:** los 10 jefes seguidos. Se abre al vencer a El Desguace.
 - **Códice:** enciclopedia de enemigos, jefes, armas y pasivas que vas descubriendo.
 - **Pasar el progreso a otro dispositivo:** en Ajustes hay un código para copiar y pegar.
@@ -131,11 +131,12 @@ Algunas decisiones importantes:
 
 ```bash
 npm install          # una sola vez
+npm run lint         # revisión automática del código (ESLint)
 npm test             # lógica del juego y simulaciones (Node)
 npm run test:e2e     # pruebas en un navegador con tamaño de celular (Playwright)
 ```
 
-- **Pruebas de lógica:** guardado, código de progreso, mejoras, evoluciones, hangar, logros, desafío diario.
+- **Pruebas de lógica:** guardado, código de progreso (incluso con valores rotos), mejoras, evoluciones, hangar, logros, desafío diario, y que el service worker esté al día con los archivos del juego.
 - **Simulaciones:** un piloto automático juega partidas completas. Hay dos estrategias: una que elige mejoras casi al azar y otra «inteligente» que va directo a las evoluciones, junta los cristales y le apunta al jefe. Se verifica que cada jefe se pueda vencer en un tiempo razonable, que las primeras galaxias y el Modo Jefes se puedan terminar sin errores, que los jefes finales de las 10 galaxias funcionen, que la partida sea repetible con la misma semilla y que el balance esté en un rango sano.
 - **Pruebas en navegador:** se juega como una persona en pantallas de Android y iPhone: moverse, subir de nivel, pausar, morir, comprar en el hangar, recargar la página, ajustes, los 10 jefes, las 10 galaxias, que funcione sin internet y que una versión nueva reemplace a la vieja sin perder el progreso.
 

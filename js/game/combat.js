@@ -337,6 +337,8 @@ export function updateBeams(run, dt) {
         b.ang += clamp(d, -b.track * dt, b.track * dt);
       }
     } else {
+      // Las líneas de aviso (fake) sólo marcan por dónde viene un golpe: no pegan.
+      if (b.fake) { b.dead = true; continue; }
       if (b.spin) b.ang += b.spin * dt;
       if (b.t >= b.warn + b.active) { b.dead = true; continue; }
       if (run.phase === 'play' && p.inv <= 0) {

@@ -143,14 +143,14 @@ export function renderDaily(app) {
   const s = $('s-start');
   s.innerHTML = `<p class="eyebrow">Desafío diario · ${esc(key.split('-').reverse().join('/'))}</p>
     <h2>Mismas reglas para todos hoy</h2>
-    <p class="hint">Compará tu puntaje con tus amigos: hoy todos juegan con la misma nave y los mismos modificadores.</p>
+    <p class="hint">Compará tu puntaje con tus amigos: hoy todos juegan con la misma nave, los mismos modificadores y el mismo hangar estándar (tus mejoras y el árbol no cuentan), así gana el que mejor juega.</p>
     <div class="row"><div class="info"><h3><span class="swatch" style="background:${ship.color}"></span>${esc(ship.name)}</h3><p>${esc(ship.desc)} ${esc(ship.trait)}</p></div></div>
     ${d.mods.map(m => `<div class="row"><div class="info"><h3>${esc(MODIFIERS[m].name)}</h3><p>${esc(MODIFIERS[m].desc)}</p></div></div>`).join('')}
     <p class="goal">${done ? '✓ Completado hoy. Podés seguir jugando para mejorar tu puntaje.' : `Objetivo: superá el sector ${DAILY_GOAL}. Premio: ${DAILY_REWARD} kg.`}</p>
     <div class="stats" style="grid-template-columns:1fr 1fr"><div><small>Tu récord de hoy</small><b>${fmt(best)}</b></div><div><small>Racha</small><b>${save.daily.streak || 0} días</b></div></div>
     <button class="btn primary" id="dGo">Empezar desafío</button>
     <button class="btn" id="dBack">Volver</button>
-    <p class="hint">Las mejoras del hangar también cuentan.</p>`;
+`;
   $('dGo').onclick = () => app.startRun({ mode: 'daily' });
   $('dBack').onclick = () => { app.sfx('click'); renderMenu(app); };
   showScreen('s-start');

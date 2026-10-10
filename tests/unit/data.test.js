@@ -10,7 +10,7 @@ import { SHIPS } from '../../js/data/ships.js';
 import { HANGAR, hangarCost } from '../../js/data/hangar.js';
 import { ACHIEVEMENTS, ACH_BY_ID, SHIP_UNLOCKS } from '../../js/data/achievements.js';
 import { ENEMIES } from '../../js/data/enemies.js';
-import { BOSSES, BOSS_ORDER } from '../../js/data/bosses.js';
+import { BOSS_ORDER } from '../../js/data/bosses.js';
 import { GALAXIES, ZONE_BY_ID, zoneOf, isBossSector, GALAXY_SECTORS } from '../../js/data/zones.js';
 import { TREES, TIER_NEEDS, treeMax } from '../../js/data/trees.js';
 import { dailyFor, mergeFlags, MODIFIERS } from '../../js/data/modes.js';
