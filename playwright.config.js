@@ -24,5 +24,8 @@ export default defineConfig({
   projects: [
     { name: 'android', use: { ...devices['Pixel 7'] } },
     { name: 'iphone', use: { ...devices['Pixel 7'], viewport: { width: 375, height: 667 }, deviceScaleFactor: 2 } },
+    // Motor de Safari (WebKit), el que usan todos los navegadores de iPhone.
+    // Sólo en GitHub (CI): en esta compu no está instalado.
+    ...(process.env.CI ? [{ name: 'safari', use: { ...devices['iPhone 13'] } }] : []),
   ],
 });
