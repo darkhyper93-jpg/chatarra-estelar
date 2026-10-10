@@ -100,9 +100,11 @@ test('los diez jefes aparecen y se dibujan sin errores', async ({ page }) => {
       window.__auto = setInterval(() => { const c = document.querySelector('#s-levelup:not([hidden]) .card'); if (c) c.click(); }, 30);
     }, i * 5);
     await page.waitForFunction(() => __ce.run && __ce.run.boss && __ce.run.boss.entered, null, { timeout: 15_000 });
-    await page.waitForTimeout(2500);
+    // Con tantas mejoras el jefe puede caer enseguida: lo mantenemos vivo mientras se dibuja.
+    await page.evaluate(() => { window.__keep = setInterval(() => { const b = __ce.run && __ce.run.boss; if (b) b.hp = Math.max(b.hp, b.maxHp * 0.5); }, 50); });
     await expect(page.locator('#bossBar')).toBeVisible();
-    await page.evaluate(() => { clearInterval(window.__auto); __ce.toMenu(); });
+    await page.waitForTimeout(2500);
+    await page.evaluate(() => { clearInterval(window.__auto); clearInterval(window.__keep); __ce.toMenu(); });
   }
   expect(errors).toEqual([]);
 });
@@ -185,9 +187,10 @@ test('las galaxias 4 a 10 y sus jefes finales se juegan sin errores', async ({ p
       window.__auto = setInterval(() => { const c = document.querySelector('#s-levelup:not([hidden]) .card'); if (c) c.click(); }, 30);
     }, g);
     await page.waitForFunction(() => __ce.run && __ce.run.boss && __ce.run.boss.entered, null, { timeout: 15_000 });
-    await page.waitForTimeout(2500);
+    await page.evaluate(() => { window.__keep = setInterval(() => { const b = __ce.run && __ce.run.boss; if (b) b.hp = Math.max(b.hp, b.maxHp * 0.5); }, 50); });
     await expect(page.locator('#bossBar')).toBeVisible();
-    await page.evaluate(() => { clearInterval(window.__auto); __ce.toMenu(); });
+    await page.waitForTimeout(2500);
+    await page.evaluate(() => { clearInterval(window.__auto); clearInterval(window.__keep); __ce.toMenu(); });
   }
   expect(errors).toEqual([]);
 });
