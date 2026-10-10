@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <title>Chatarra Estelar</title>
+  <meta name="description" content="Shooter espacial con mejoras, jefes y progresión. Se instala en el celular y funciona sin internet.">
+  <meta name="theme-color" content="#0b0e2a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Chatarra">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="assets/icons/icon-192.png" type="image/png">
+  <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
+  <link rel="preload" href="assets/fonts/bungee-400.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/fonts/chakra-petch-600.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="app">
+    <canvas id="cv" aria-label="Zona de juego"></canvas>
+
+    <div id="hud" hidden>
+      <div class="hud-top">
+        <div class="meters">
+          <div class="bar"><i id="hpFill"></i><span id="hpTxt">100 / 100</span></div>
+          <div class="bar xp"><i id="xpFill"></i></div>
+          <div class="lvrow"><span id="lvTxt">NV 1</span><span id="shieldTxt"></span><span class="combo" id="comboTxt"></span></div>
+        </div>
+        <div class="where">
+          <b id="sectorTxt">SECTOR 1</b>
+          <div class="secbar"><i id="secFill"></i></div>
+          <small><span id="scrapTxt">0</span> kg</small>
+        </div>
+        <button id="pauseBtn" aria-label="Pausa">II</button>
+      </div>
+      <div class="loadout" id="loadout"></div>
+      <div class="bossbar" id="bossBar" hidden>
+        <b id="bossName">JEFE</b>
+        <div class="bar" id="bossBarEl"><i id="bossFill"></i></div>
+      </div>
+    </div>
+
+    <div id="tutorial" hidden>Arrastrá el dedo para moverte<small>La nave dispara sola</small></div>
+    <div id="toast" aria-live="polite"></div>
+
+    <section class="screen" id="s-menu">
+      <p class="eyebrow">Turno de recolección · Cinturón exterior</p>
+      <h1>Chatarra<span>Estelar</span></h1>
+      <div class="stats">
+        <div><small>Mejor sector</small><b id="mBest">—</b></div>
+        <div><small>En bodega</small><b id="mScrap">0 kg</b></div>
+        <div><small>Nave</small><b id="mShip">Gorrión</b></div>
+      </div>
+      <p class="goal" id="mGoal">Primer turno: sobreviví todo lo que puedas.</p>
+      <button class="btn primary" id="playBtn">Despegar</button>
+      <div class="modes">
+        <button class="mode" id="dailyBtn"><b>Desafío diario</b><small id="dailySub">Nave y reglas sorpresa</small></button>
+        <button class="mode" id="rushBtn"><b>Modo Jefes</b><small id="rushSub">Vencé a El Desguace para abrirlo</small></button>
+      </div>
+      <div class="row4">
+        <button class="tile" id="hangarBtn">Hangar<small id="hangarSub">Mejoras</small></button>
+        <button class="tile" id="achBtn">Logros<small id="achSub">0/0</small></button>
+        <button class="tile" id="codexBtn">Códice<small id="codexSub">0%</small></button>
+        <button class="tile" id="settingsBtn">Ajustes<small>Sonido</small></button>
+      </div>
+      <button class="btn small" id="installBtn" hidden>Instalar en el celular</button>
+    </section>
+
+    <section class="screen" id="s-start" hidden></section>
+    <section class="screen" id="s-levelup" hidden></section>
+    <section class="screen" id="s-pause" hidden></section>
+    <section class="screen" id="s-over" hidden></section>
+    <section class="screen top" id="s-hangar" hidden></section>
+    <section class="screen top" id="s-ach" hidden></section>
+    <section class="screen top" id="s-codex" hidden></section>
+    <section class="screen top" id="s-settings" hidden></section>
+    <section class="screen" id="s-confirm" hidden></section>
+  </div>
+  <noscript>Este juego necesita JavaScript activado.</noscript>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
