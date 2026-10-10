@@ -10,7 +10,8 @@ export default defineConfig({
   timeout: 60_000,
   fullyParallel: false,
   workers: 1,
-  reporter: [['list']],
+  // En GitHub, además, cada falla aparece como anotación en la ejecución.
+  reporter: process.env.CI ? [['list'], ['github']] : [['list']],
   use: {
     baseURL: 'http://localhost:8091',
     trace: 'retain-on-failure',
