@@ -11,7 +11,8 @@ import { BOSSES, BOSS_ORDER } from '../data/bosses.js';
 import { WEAPONS, WEAPON_IDS } from '../data/weapons.js';
 import { PASSIVES, PASSIVE_IDS } from '../data/passives.js';
 import { ZONES, GALAXIES } from '../data/zones.js';
-import { drawEnemy, drawBoss } from '../render/sprites.js';
+import { drawEnemy } from '../render/sprites.js';
+import { drawBoss } from '../render/boss-sprites.js';
 
 /** Lista de logros. */
 export function renderAchievements(app) {

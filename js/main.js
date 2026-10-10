@@ -24,6 +24,7 @@ import { renderHangar } from './ui/hangar.js';
 import { renderAchievements, renderCodex } from './ui/collection.js';
 import { renderSettings } from './ui/settings.js';
 import { setupUpdates, updatePending } from './core/updates.js';
+import { canInstall, setupInstall, requestWakeLock, releaseWakeLock } from './ui/device.js';
 
 /* ------------------------------ estado ------------------------------ */
 
@@ -41,8 +42,6 @@ const hud = createHud();
 let state = 'menu'; // menu | play | choice | pause | over | screen
 let run = null;
 let returnTo = 'menu';
-let installEvent = null;
-let wakeLock = null;
 let achT = 0;
 
 const app = {
@@ -52,7 +51,7 @@ const app = {
   persist() { if (storage) writeSave(storage, app.save); },
   sfx: (n, x) => audio.play(n, x),
   vibrate(ms) { if (app.save.settings.vibrate && navigator.vibrate) try { navigator.vibrate(ms); } catch (e) { /* sin vibración */ } },
-  canInstall: () => !!installEvent || isIOS() && !isStandalone(),
+  canInstall,
   startRun,
   resume,
   quitRun: () => endRun(true),
@@ -76,9 +75,6 @@ const app = {
     applySettings();
   },
 };
-
-function isIOS() { return /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1); }
-function isStandalone() { return matchMedia('(display-mode: standalone)').matches || navigator.standalone === true; }
 
 function applySettings() {
   const st = app.save.settings;
@@ -372,32 +368,7 @@ $('achBtn').onclick = () => { audio.unlock(); audio.play('click'); openScreen(re
 $('codexBtn').onclick = () => { audio.unlock(); audio.play('click'); openScreen(renderCodex); };
 $('settingsBtn').onclick = () => { audio.unlock(); audio.play('click'); openScreen(renderSettings); };
 $('pauseBtn').onclick = () => pause();
-$('installBtn').onclick = async () => {
-  if (installEvent) {
-    installEvent.prompt();
-    try { await installEvent.userChoice; } catch (e) { /* nada */ }
-    installEvent = null;
-    $('installBtn').hidden = true;
-  } else {
-    toast('En iPhone: tocá Compartir y después «Agregar a inicio».', 6000);
-  }
-};
-
-addEventListener('beforeinstallprompt', e => {
-  e.preventDefault();
-  installEvent = e;
-  if (state === 'menu') $('installBtn').hidden = false;
-});
-
-/* ------------------------------ pantalla encendida ------------------------------ */
-
-async function requestWakeLock() {
-  try { if ('wakeLock' in navigator && !wakeLock) { wakeLock = await navigator.wakeLock.request('screen'); wakeLock.addEventListener('release', () => { wakeLock = null; }); } } catch (e) { wakeLock = null; }
-}
-function releaseWakeLock() {
-  try { wakeLock && wakeLock.release(); } catch (e) { /* nada */ }
-  wakeLock = null;
-}
+setupInstall(() => state === 'menu');
 
 /* ------------------------------ arranque ------------------------------ */
 

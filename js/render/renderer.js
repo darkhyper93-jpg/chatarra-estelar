@@ -3,7 +3,8 @@
  * jefes, armas, balas, efectos y carteles.
  */
 import { TAU, clamp } from '../core/util.js';
-import { drawShip, drawEnemy, drawBoss, poly } from './sprites.js';
+import { drawShip, drawEnemy, poly } from './sprites.js';
+import { drawBoss } from './boss-sprites.js';
 import { dronePos } from '../game/weapons.js';
 
 const FONT_UI = "'Chakra Petch', 'Trebuchet MS', system-ui, sans-serif";
