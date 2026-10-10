@@ -40,11 +40,19 @@ export function defaultSave() {
 /** Copia profunda simple de datos JSON. */
 const clone = o => JSON.parse(JSON.stringify(o));
 
-/** Mezcla `src` sobre `base` respetando la forma de `base` (sólo objetos planos). */
+/** Claves que en JavaScript tocan el prototipo de los objetos: nunca se copian. */
+const UNSAFE_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
+
+/**
+ * Mezcla `src` sobre `base` respetando la forma de `base` (sólo objetos planos).
+ * Sólo mira las claves propias de `base`, y saltea las que tocan el prototipo,
+ * para que un código de progreso armado no pueda meterse en Object.prototype.
+ */
 function mergeShape(base, src) {
   if (!src || typeof src !== 'object' || Array.isArray(src)) return base;
   for (const k of Object.keys(src)) {
-    const b = base[k], v = src[k];
+    if (UNSAFE_KEYS.has(k)) continue;
+    const b = Object.hasOwn(base, k) ? base[k] : undefined, v = src[k];
     if (b && typeof b === 'object' && !Array.isArray(b)) base[k] = mergeShape(b, v);
     else if (b === undefined || typeof b === typeof v) base[k] = v;
   }
@@ -76,15 +84,16 @@ const numIn = (v, lo, hi, def) => (Number.isFinite(v) ? Math.max(lo, Math.min(hi
  * editado a mano no puede dejar el juego sin arrancar.
  */
 function sanitize(s) {
-  for (const id of Object.keys(s.ships)) if (!SHIPS[id] || s.ships[id] !== true) delete s.ships[id];
-  if (!s.ships[s.ship]) s.ship = 'gorrion';
+  for (const id of Object.keys(s.ships)) if (!Object.hasOwn(SHIPS, id) || s.ships[id] !== true) delete s.ships[id];
+  // Object.hasOwn y no `in` ni [ ]: «constructor» o «toString» existen en cualquier objeto.
+  if (!Object.hasOwn(s.ships, s.ship)) s.ship = 'gorrion';
   for (const id of Object.keys(s.hangar)) {
     const h = HANGAR.find(x => x.id === id);
     const l = h ? intIn(s.hangar[id], 0, hangarMax(h, GALAXIES.length), 0) : 0;
     if (l > 0) s.hangar[id] = l; else delete s.hangar[id];
   }
   for (const ship of Object.keys(s.shipTree)) {
-    const nodes = TREES[ship], tree = s.shipTree[ship];
+    const nodes = Object.hasOwn(TREES, ship) ? TREES[ship] : null, tree = s.shipTree[ship];
     if (!nodes || !tree || typeof tree !== 'object') { delete s.shipTree[ship]; continue; }
     for (const id of Object.keys(tree)) {
       const n = nodes.find(x => x.id === id);
@@ -98,7 +107,7 @@ function sanitize(s) {
   }
   const st = s.settings, d = defaultSave().settings;
   st.galaxy = intIn(st.galaxy, 0, GALAXIES.length - 1, 0);
-  if (!DIFFICULTIES[st.difficulty]) st.difficulty = 'normal';
+  if (!Object.hasOwn(DIFFICULTIES, st.difficulty)) st.difficulty = 'normal';
   st.sfx = numIn(st.sfx, 0, 1, d.sfx);
   st.music = numIn(st.music, 0, 1, d.music);
   st.sens = numIn(st.sens, 0.8, 2.2, d.sens);

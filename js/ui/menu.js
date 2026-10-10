@@ -102,7 +102,7 @@ function renderGalaxies(app) {
 function renderDifficulty(app) {
   const st = app.save.settings;
   const open = id => !DIFFICULTIES[id].unlock || (app.save.bosses[DIFFICULTIES[id].unlock] || 0) > 0;
-  if (!DIFFICULTIES[st.difficulty] || !open(st.difficulty)) st.difficulty = 'normal';
+  if (!Object.hasOwn(DIFFICULTIES, st.difficulty) || !open(st.difficulty)) st.difficulty = 'normal';
   const row = $('diffRow');
   row.innerHTML = DIFFICULTY_IDS.map(id => `<button role="radio" data-diff="${id}" aria-checked="${st.difficulty === id}" ${open(id) ? '' : 'disabled'} title="${esc(open(id) ? DIFFICULTIES[id].desc : 'Vencé a El Forjador para abrirla')}">${esc(DIFFICULTIES[id].name)}</button>`).join('');
   row.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
