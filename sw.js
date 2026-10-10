@@ -3,7 +3,7 @@
  * internet. La lista de archivos y la versión las escribe
  * scripts/gen-sw.js (no editarlas a mano).
  */
-const VERSION = '5901626019';
+const VERSION = 'b0907ba63a';
 const CACHE = 'scrap-nova-' + VERSION;
 // Prefijos de copias viejas que se pueden borrar (el juego antes se llamaba Chatarra Estelar).
 const OLD_PREFIXES = ['scrap-nova-', 'chatarra-estelar-'];

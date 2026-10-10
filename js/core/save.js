@@ -5,6 +5,7 @@
  * de un dispositivo a otro.
  */
 
+import { hasOwn } from './util.js';
 import { SHIPS } from '../data/ships.js';
 import { GALAXIES } from '../data/zones.js';
 import { HANGAR, hangarMax } from '../data/hangar.js';
@@ -52,7 +53,7 @@ function mergeShape(base, src) {
   if (!src || typeof src !== 'object' || Array.isArray(src)) return base;
   for (const k of Object.keys(src)) {
     if (UNSAFE_KEYS.has(k)) continue;
-    const b = Object.hasOwn(base, k) ? base[k] : undefined, v = src[k];
+    const b = hasOwn(base, k) ? base[k] : undefined, v = src[k];
     if (b && typeof b === 'object' && !Array.isArray(b)) base[k] = mergeShape(b, v);
     else if (b === undefined || typeof b === typeof v) base[k] = v;
   }
@@ -84,16 +85,16 @@ const numIn = (v, lo, hi, def) => (Number.isFinite(v) ? Math.max(lo, Math.min(hi
  * editado a mano no puede dejar el juego sin arrancar.
  */
 function sanitize(s) {
-  for (const id of Object.keys(s.ships)) if (!Object.hasOwn(SHIPS, id) || s.ships[id] !== true) delete s.ships[id];
-  // Object.hasOwn y no `in` ni [ ]: «constructor» o «toString» existen en cualquier objeto.
-  if (!Object.hasOwn(s.ships, s.ship)) s.ship = 'gorrion';
+  for (const id of Object.keys(s.ships)) if (!hasOwn(SHIPS, id) || s.ships[id] !== true) delete s.ships[id];
+  // hasOwn y no `in` ni [ ]: «constructor» o «toString» existen en cualquier objeto.
+  if (!hasOwn(s.ships, s.ship)) s.ship = 'gorrion';
   for (const id of Object.keys(s.hangar)) {
     const h = HANGAR.find(x => x.id === id);
     const l = h ? intIn(s.hangar[id], 0, hangarMax(h, GALAXIES.length), 0) : 0;
     if (l > 0) s.hangar[id] = l; else delete s.hangar[id];
   }
   for (const ship of Object.keys(s.shipTree)) {
-    const nodes = Object.hasOwn(TREES, ship) ? TREES[ship] : null, tree = s.shipTree[ship];
+    const nodes = hasOwn(TREES, ship) ? TREES[ship] : null, tree = s.shipTree[ship];
     if (!nodes || !tree || typeof tree !== 'object') { delete s.shipTree[ship]; continue; }
     for (const id of Object.keys(tree)) {
       const n = nodes.find(x => x.id === id);
@@ -107,7 +108,7 @@ function sanitize(s) {
   }
   const st = s.settings, d = defaultSave().settings;
   st.galaxy = intIn(st.galaxy, 0, GALAXIES.length - 1, 0);
-  if (!Object.hasOwn(DIFFICULTIES, st.difficulty)) st.difficulty = 'normal';
+  if (!hasOwn(DIFFICULTIES, st.difficulty)) st.difficulty = 'normal';
   st.sfx = numIn(st.sfx, 0, 1, d.sfx);
   st.music = numIn(st.music, 0, 1, d.music);
   st.sens = numIn(st.sens, 0.8, 2.2, d.sens);

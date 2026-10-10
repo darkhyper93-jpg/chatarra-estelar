@@ -6,7 +6,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createRng, hashString, todayKey } from '../../js/core/rng.js';
 import { defaultSave, migrate, loadSave, writeSave, exportCode, importCode, SAVE_KEY } from '../../js/core/save.js';
-import { compact, fmt, fmtTime, segDist2, wrapAngle, esc } from '../../js/core/util.js';
+import { compact, fmt, fmtTime, segDist2, wrapAngle, esc, hasOwn } from '../../js/core/util.js';
 
 test('el azar con la misma semilla da la misma secuencia', () => {
   const a = createRng(42), b = createRng(42), c = createRng(43);
@@ -90,4 +90,12 @@ test('el guardado viejo pasa su récord a la galaxia 1', () => {
   const s = migrate({ best: { sector: 27 } });
   assert.equal(s.galaxies.best.cinturon, 27);
   assert.deepEqual(s.shipTree, {});
+});
+
+test('hasOwn sólo ve claves propias, no las heredadas de los objetos', () => {
+  assert.equal(hasOwn({ a: 1 }, 'a'), true);
+  assert.equal(hasOwn({ a: undefined }, 'a'), true);
+  for (const k of ['constructor', 'toString', 'hasOwnProperty', '__proto__']) assert.equal(hasOwn({}, k), false, k);
+  assert.equal(hasOwn(null, 'a'), false);
+  assert.equal(hasOwn(undefined, 'a'), false);
 });

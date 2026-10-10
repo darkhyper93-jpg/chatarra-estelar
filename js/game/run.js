@@ -4,7 +4,7 @@
  * partidas enteras en Node.
  */
 import { createRng } from '../core/rng.js';
-import { clamp, compact } from '../core/util.js';
+import { clamp, compact, hasOwn } from '../core/util.js';
 import { SHIPS } from '../data/ships.js';
 import { WEAPON_IDS } from '../data/weapons.js';
 import { mergeFlags, DIFFICULTIES, DAILY_HANGAR } from '../data/modes.js';
@@ -28,7 +28,7 @@ export function createRun(opts) {
   const save = opts.save;
   const mode = opts.mode || 'campaign';
   const daily = opts.daily;
-  const shipId = mode === 'daily' ? daily.ship : (Object.hasOwn(SHIPS, save.ship) ? save.ship : 'gorrion');
+  const shipId = mode === 'daily' ? daily.ship : (hasOwn(SHIPS, save.ship) ? save.ship : 'gorrion');
   const mods = mode === 'daily' ? daily.mods.slice() : [];
   const seed = opts.seed ?? (mode === 'daily' ? daily.seed : (Date.now() ^ (Math.random() * 1e9)) >>> 0);
   const startZone = mode === 'campaign' ? (opts.startZone || 0) : 0;
@@ -40,7 +40,7 @@ export function createRun(opts) {
   const run = {
     mode, seed, W: WORLD_W, H, rng: createRng(seed), noFx: !!opts.noFx, god: !!opts.god,
     galaxy, galaxyMul: GALAXIES[galaxy].scrap, galaxyPower: fair ? 0 : GALAXIES.filter(g => (save.galaxies || { cleared: {} }).cleared[g.id]).length,
-    diffId: mode === 'daily' ? 'normal' : (Object.hasOwn(DIFFICULTIES, opts.difficulty) ? opts.difficulty : 'normal'),
+    diffId: mode === 'daily' ? 'normal' : (hasOwn(DIFFICULTIES, opts.difficulty) ? opts.difficulty : 'normal'),
     hangar: Object.assign({}, fair ? DAILY_HANGAR : save.hangar), settings: save.settings || {},
     dailyKey: mode === 'daily' ? daily.date : null,
     bossesBefore: Object.assign({}, save.bosses), mods, flags: mergeFlags(mods),

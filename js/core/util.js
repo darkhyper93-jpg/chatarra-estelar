@@ -5,6 +5,12 @@
 
 export const TAU = Math.PI * 2;
 
+/**
+ * true si `o` tiene la clave `k` como propia (no heredada, como «constructor»).
+ * Igual que Object.hasOwn, que no existe en Safari anterior a 15.4.
+ */
+export const hasOwn = (o, k) => o != null && Object.prototype.hasOwnProperty.call(o, k);
+
 /** Limita v al rango [a, b]. */
 export const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
 
