@@ -3,6 +3,7 @@
  * Cada prueba reproduce el problema original, así no vuelve a aparecer.
  */
 import { test } from 'node:test';
+import { readFileSync } from 'node:fs';
 import assert from 'node:assert/strict';
 import { defaultSave, migrate, exportCode, importCode } from '../../js/core/save.js';
 import { createRun, step, drainEvents } from '../../js/game/run.js';
@@ -141,4 +142,42 @@ test('un desafío diario que termina después de medianoche cuenta para el día 
   const before = save.scrap;
   finishRun(save, run2, '2026-10-11');
   assert.ok(save.scrap - before >= DAILY_REWARD);
+});
+
+test('el sonido no deja promesas rechazadas sin atrapar al suspender o retomar', async () => {
+  // Navegadores que rechazan suspend()/resume() (por ejemplo, sin permiso de audio).
+  const reject = () => Promise.reject(new Error('el navegador no deja'));
+  const gain = () => ({ gain: { value: 0 }, connect() {} });
+  class FakeAudioContext {
+    constructor() { this.state = 'suspended'; this.sampleRate = 8; this.destination = {}; }
+    createBuffer() { return { getChannelData: () => new Float32Array(8) }; }
+    createGain() { return gain(); }
+    resume() { return reject(); }
+    suspend() { return reject(); }
+  }
+  const hadWindow = 'window' in globalThis, oldWindow = globalThis.window;
+  globalThis.window = { AudioContext: FakeAudioContext };
+  const unhandled = [];
+  const onUnhandled = e => unhandled.push(e);
+  process.on('unhandledRejection', onUnhandled);
+  try {
+    const { createAudio } = await import('../../js/core/audio.js');
+    const audio = createAudio();
+    audio.unlock();      // crea el contexto
+    audio.unlock();      // ya existe y está suspendido: lo retoma
+    audio.sleep(true);   // la app pasa a segundo plano
+    audio.sleep(false);  // vuelve
+    await new Promise(r => setTimeout(r, 20));
+    assert.deepEqual(unhandled.map(e => e.message), []);
+  } finally {
+    process.off('unhandledRejection', onUnhandled);
+    if (hadWindow) globalThis.window = oldWindow; else delete globalThis.window;
+  }
+});
+
+test('la versión de Ajustes coincide con la de package.json', () => {
+  const pkg = JSON.parse(readFileSync(new URL('../../package.json', import.meta.url), 'utf8'));
+  const src = readFileSync(new URL('../../js/ui/settings.js', import.meta.url), 'utf8');
+  const shown = src.match(/export const VERSION = '([^']+)'/)[1];
+  assert.equal(shown, pkg.version, 'actualizá VERSION en js/ui/settings.js y "version" en package.json juntos');
 });

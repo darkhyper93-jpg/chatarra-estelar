@@ -1,6 +1,6 @@
 {
   "name": "scrap-nova",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "private": true,
   "description": "Shooter espacial con progresión, instalable en el celular (PWA).",
   "type": "module",

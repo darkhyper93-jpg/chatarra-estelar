@@ -14,6 +14,9 @@ const ARP = [0, 2, 4, 2, 5, 4, 2, 4, 0, 2, 4, 6, 5, 4, 2, 1];
 const PROG = [0, 5, 2, 6];
 const midi = n => 440 * Math.pow(2, (n - 69) / 12);
 
+/** resume() y suspend() devuelven promesas que el navegador puede rechazar: se ignora el rechazo. */
+const quiet = p => { if (p && typeof p.catch === 'function') p.catch(() => {}); };
+
 export function createAudio() {
   let ac = null, noiseBuf = null, sfxGain = null, musicGain = null;
   let sfxVol = 0.8, musicVol = 0.5;
@@ -21,7 +24,7 @@ export function createAudio() {
   const music = { on: false, cfg: null, boss: false, step: 0, next: 0, timer: null, duck: 1 };
 
   function unlock() {
-    if (ac) { if (ac.state === 'suspended') ac.resume(); return; }
+    if (ac) { if (ac.state === 'suspended') quiet(ac.resume()); return; }
     try {
       ac = new (window.AudioContext || window.webkitAudioContext)();
       noiseBuf = ac.createBuffer(1, ac.sampleRate, ac.sampleRate);
@@ -192,7 +195,7 @@ export function createAudio() {
   /** Suspende todo el audio mientras el juego no se ve (ahorra batería) y lo retoma al volver. */
   function sleep(on) {
     if (!ac) return;
-    try { if (on) ac.suspend(); else ac.resume(); } catch (e) { /* nada */ }
+    try { quiet(on ? ac.suspend() : ac.resume()); } catch (e) { /* nada */ }
   }
 
   function stopMusic() {
