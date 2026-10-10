@@ -177,6 +177,7 @@ export function weaponStats(id, lvl, evolved, ps) {
   const s = { ...def.base };
   for (let i = 0; i < Math.min(lvl, WEAPON_MAX) - 1; i++) applyDelta(s, def.ups[i][0]);
   if (evolved) applyDelta(s, def.evo.delta);
+  if (ps && ps.weaponMods && ps.weaponMods[id]) applyDelta(s, ps.weaponMods[id]);
   if (ps) {
     s.dmg *= ps.might;
     s.cd /= ps.haste;

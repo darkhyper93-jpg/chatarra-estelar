@@ -24,6 +24,12 @@ export const ENEMIES = {
   capsula:       { name: 'Cápsula de suministros', hp: 30, r: 15, speed: 50, xp: 0, contact: 0, score: 0, color: '#8ff0a4', desc: 'Disparale para abrirla.' },
   huevo:         { name: 'Huevo ámbar',    hp: 45,  r: 12, speed: 0,   xp: 1,   contact: 12, score: 15, color: '#ffb547', desc: 'Si no lo rompés a tiempo, nace una chispa.' },
   ojito:         { name: 'Ojito',          hp: 35,  r: 11, speed: 70,  xp: 1,   contact: 14, score: 15, color: '#b9a0ff', desc: 'Pequeño vigía del Ojo del Vacío.' },
+  lancero:       { name: 'Lancero',        hp: 55,  r: 14, speed: 620, xp: 3,   contact: 30, score: 45, color: '#ff4f6d', desc: 'Marca una línea de lado a lado y la cruza a toda velocidad.' },
+  nodriza:       { name: 'Nodriza',        hp: 260, r: 26, speed: 45,  xp: 8,   contact: 26, score: 90, color: '#ff9e6b', desc: 'Nave madre: suelta drones mientras viva.' },
+  fantasma:      { name: 'Fantasma',       hp: 60,  r: 15, speed: 60,  xp: 4,   contact: 18, score: 50, color: '#d7c9ff', desc: 'Se esfuma y vuelve a aparecer. Mientras está borroso no le entra nada.' },
+  mortero:       { name: 'Mortero',        hp: 90,  r: 18, speed: 60,  xp: 5,   contact: 20, score: 60, color: '#ffb36b', desc: 'Lanza proyectiles que caen donde está el círculo y explotan en anillo.' },
+  divisor:       { name: 'Divisor',        hp: 110, r: 20, speed: 55,  xp: 3,   contact: 20, score: 40, color: '#5ee6c0', desc: 'Al romperse se parte en dos más chicos (dos veces).' },
+  acorazado:     { name: 'Acorazado',      hp: 420, r: 28, speed: 30,  xp: 12,  contact: 32, score: 140, color: '#8fa7c0', desc: 'Blindado: recibe menos daño. Dispara espirales giratorias.' },
   clon:          { name: 'Reflejo coral',  hp: 60,  r: 22, speed: 0,   xp: 1,   contact: 18, score: 20, color: '#ff6fb1', desc: 'Copia de la Reina. Se rompe fácil.' },
 };
 

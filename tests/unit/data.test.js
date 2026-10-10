@@ -11,7 +11,8 @@ import { HANGAR, hangarCost } from '../../js/data/hangar.js';
 import { ACHIEVEMENTS, SHIP_UNLOCKS } from '../../js/data/achievements.js';
 import { ENEMIES } from '../../js/data/enemies.js';
 import { BOSSES, BOSS_ORDER } from '../../js/data/bosses.js';
-import { ZONES, zoneOf, cycleOf, isBossSector, CAMPAIGN_SECTORS } from '../../js/data/zones.js';
+import { GALAXIES, ZONE_BY_ID, zoneOf, isBossSector, GALAXY_SECTORS } from '../../js/data/zones.js';
+import { TREES, TIER_NEEDS, treeMax } from '../../js/data/trees.js';
 import { dailyFor, mergeFlags, MODIFIERS } from '../../js/data/modes.js';
 import { baseStats } from '../../js/game/stats.js';
 
@@ -58,19 +59,40 @@ test('logros con ids únicos y premio positivo', () => {
   for (const a of ACHIEVEMENTS) assert.ok(a.reward > 0 && a.name && a.desc, a.id);
 });
 
-test('zonas: cada una con jefe y enemigos que existen', () => {
-  assert.equal(ZONES.length, BOSS_ORDER.length);
-  ZONES.forEach((z, i) => {
-    assert.equal(z.boss, BOSS_ORDER[i]);
-    assert.ok(BOSSES[z.boss]);
-    for (const e of Object.keys(z.pool)) assert.ok(ENEMIES[e], `${z.id}: ${e}`);
-  });
+test('galaxias: 10 zonas cada una, con jefe y enemigos que existen', () => {
+  assert.equal(GALAXIES.length, 3);
+  const ids = new Set();
+  for (const g of GALAXIES) {
+    assert.equal(g.zones.length, 10, g.id);
+    g.zones.forEach((z, i) => {
+      assert.ok(!ids.has(z.id), 'id de zona repetido: ' + z.id);
+      ids.add(z.id);
+      assert.equal(z.boss, BOSS_ORDER[i], `${g.id}/${z.id} usa el jefe ${i + 1}`);
+      for (const e of Object.keys(z.pool)) assert.ok(ENEMIES[e], `${z.id}: ${e}`);
+      assert.ok(Object.values(z.pool).some(v => v > 0));
+      assert.ok(z.music && z.a && z.b);
+    });
+  }
+  assert.ok(GALAXIES[1].hp > GALAXIES[0].hp && GALAXIES[2].hp > GALAXIES[1].hp, 'cada galaxia es más difícil');
+  assert.ok(GALAXIES[2].scrap > GALAXIES[1].scrap, 'y da más chatarra');
   assert.equal(zoneOf(1).id, 'oxido');
-  assert.equal(zoneOf(6).id, 'ambar');
-  assert.equal(zoneOf(CAMPAIGN_SECTORS + 1).id, 'oxido');
-  assert.equal(cycleOf(CAMPAIGN_SECTORS), 0);
-  assert.equal(cycleOf(CAMPAIGN_SECTORS + 1), 1);
-  assert.ok(isBossSector(5) && isBossSector(40) && !isBossSector(41));
+  assert.equal(zoneOf(6, 1).id, 'arrecife');
+  assert.equal(zoneOf(GALAXY_SECTORS, 2).id, 'singularidad');
+  assert.ok(ZONE_BY_ID.nucleo);
+  assert.ok(isBossSector(5) && isBossSector(50) && !isBossSector(41));
+});
+
+test('árboles: 12 naves con 8 mejoras únicas en 4 escalones', () => {
+  assert.equal(Object.keys(SHIPS).length, 12);
+  const all = new Set();
+  for (const ship of Object.keys(SHIPS)) {
+    const t = TREES[ship];
+    assert.ok(t, 'árbol de ' + ship);
+    assert.equal(t.length, 8, ship);
+    for (let tier = 1; tier <= 4; tier++) assert.equal(t.filter(n => n.tier === tier).length, 2, ship + ' escalón ' + tier);
+    for (const n of t) { assert.ok(!all.has(n.id), 'id repetido ' + n.id); all.add(n.id); assert.ok(n.max >= 1 && n.name && n.desc); }
+    assert.ok(treeMax(ship) >= TIER_NEEDS[4], ship + ': se puede llegar al último escalón');
+  }
 });
 
 test('el desafío diario es igual para la misma fecha y cambia entre días', () => {

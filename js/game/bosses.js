@@ -23,6 +23,9 @@ const ENTER = 1.8; // segundos que tarda en entrar a la pantalla
 
 /** Anillo de n balas alrededor del jefe. `gap` deja un hueco (en balas) apuntando a `gapAng`. */
 function ringShot(run, b, n, speed, o = {}) {
+  const T = run.tier || 0;
+  n = Math.round(n * (1 + 0.25 * T));
+  speed *= 1 + 0.08 * T;
   const off = o.offset ?? b.t;
   for (let i = 0; i < n; i++) {
     const a = off + (i / n) * TAU;
@@ -36,13 +39,17 @@ function ringShot(run, b, n, speed, o = {}) {
 
 /** Abanico de n balas apuntado al jugador. */
 function fanShot(run, b, n, spread, speed, o = {}) {
+  const T = run.tier || 0;
+  n += 2 * T;
+  speed *= 1 + 0.08 * T;
   const a0 = aimAt(run, b.x, b.y);
   for (let i = 0; i < n; i++) bshoot(run, b.x, b.y, a0 + (i - (n - 1) / 2) * spread, speed, o);
 }
 
 /** Empieza una espiral que dura `dur` segundos. */
 function startSpiral(b, dur, arms, speed, rate = 0.08, turn = 3, o = {}) {
-  b.spiral = { t: dur, arms, speed, rate, turn, acc: 0, ang: b.t, o };
+  const T = b.tier || 0;
+  b.spiral = { t: dur, arms: arms + T, speed: speed * (1 + 0.06 * T), rate: rate / (1 + 0.15 * T), turn, acc: 0, ang: b.t, o };
 }
 
 function updateSpiral(run, b, dt) {
@@ -293,6 +300,67 @@ const DEFS = {
     ],
   },
 
+  titan: {
+    init: (r, b) => {
+      b.turretsAlive = 4;
+      b.dmgTaken = 0.3;
+      b.turrets = [-78, -26, 26, 78].map(ox => {
+        const t = makeBossPart(r, b, ox, 22, BOSSES.titan.turret, 17);
+        t.ox = ox;
+        t.oy = 22;
+        t.isTurret = true;
+        t.onDeath = (run, me) => {
+          explode(run, me.x, me.y, '#c7d0e0', 24);
+          sfx(run, 'big');
+          b.turretsAlive--;
+          b.dmgTaken = b.turretsAlive > 2 ? 0.3 : b.turretsAlive > 0 ? 0.65 : 1;
+          if (b.turretsAlive === 0) banner(run, 'TORRETAS DESTRUIDAS', 'El casco quedó expuesto', 1.6, '#c7d0e0');
+        };
+        return t;
+      });
+      b.vx = 32;
+    },
+    move: (r, b, dt) => {
+      sway(r, b, dt, 120);
+      for (const t of b.turrets) if (!t.dead) { t.x = b.x + t.ox; t.y = b.y + t.oy; }
+    },
+    phases: [
+      { at: 1, gap: 2.3, attacks: [
+        (r, b) => { for (const t of b.turrets) if (!t.dead) fanShot(r, t, 3, 0.22, 200, { color: '#e9eef8' }); if (b.turretsAlive === 0) fanShot(r, b, 7, 0.15, 210); },
+        (r, b) => broadside(r, b),
+        (r, b) => cannon(r, b, [r.player.x]),
+        (r, b) => { for (let i = 0; i < 4; i++) bshoot(r, 60 + i * (r.W - 120) / 3, b.y + 30, Math.PI / 2, 40, { r: 8, color: '#c0e36b', kind: 'mine', split: { t: 1.6, n: 6, spread: TAU / 6, speed: 4 } }); },
+      ] },
+      { at: 0.5, gap: 1.8, enter: (r, b) => { b.vx *= 1.6; banner(r, 'MÁQUINAS A FONDO', 'El Titán acelera', 1.4, '#c7d0e0'); }, attacks: [
+        (r, b) => { for (const t of b.turrets) if (!t.dead) fanShot(r, t, 5, 0.18, 220, { color: '#e9eef8' }); if (b.turretsAlive <= 1) startSpiral(b, 1.8, 3, 140); },
+        (r, b) => { broadside(r, b); r.later(0.8, () => broadside(r, b)); },
+        (r, b) => cannon(r, b, [r.player.x - 70, r.player.x + 70]),
+        (r, b) => cannon(r, b, [r.player.x]),
+      ] },
+    ],
+  },
+
+  colmena: {
+    move: (r, b, dt) => {
+      b.x = r.W / 2 + Math.sin(b.t * 0.35) * 80;
+      b.y = b.homeY + Math.sin(b.t * 0.9) * 10;
+    },
+    phases: [
+      { at: 1, gap: 2.4, attacks: [
+        (r, b) => { for (let i = 0; i < 8; i++) { const e = spawnEnemy(r, 'enjambre', b.x, b.y, { summon: true }); e.cx = b.x; e.cy = b.y; e.bx = b.x; e.ph = (i / 8) * TAU; } sfx(r, 'egg'); },
+        (r, b) => blades(r, b, 3, 0.45),
+        (r, b) => { ringShot(r, b, 12, 120, { color: '#ffe066' }); r.later(0.35, () => ringShot(r, b, 12, 120, { offset: b.t + Math.PI / 12, color: '#ffe066' })); },
+        (r, b) => fanShot(r, b, 5, 0.2, 220, { color: '#ffe066' }),
+      ] },
+      { at: 0.5, gap: 2, enter: (r, b) => { banner(r, 'LA REINA DESPIERTA', 'Más enjambres y más aspas', 1.4, '#ffe066'); spawnEnemy(r, 'nodriza', r.W / 2, b.y + 60, { summon: true }); }, attacks: [
+        (r, b) => blades(r, b, 4, 0.5),
+        (r, b) => { for (let i = 0; i < 10; i++) { const e = spawnEnemy(r, 'enjambre', b.x, b.y, { summon: true }); e.cx = b.x; e.cy = b.y; e.bx = b.x; e.ph = (i / 10) * TAU; } },
+        (r, b) => { ringShot(r, b, 14, 125, { color: '#ffe066' }); r.later(0.35, () => ringShot(r, b, 14, 125, { offset: b.t + Math.PI / 14, color: '#ffe066' })); r.later(0.7, () => ringShot(r, b, 14, 125, { color: '#ffe066' })); },
+        (r, b) => startSpiral(b, 2.2, 3, 135, 0.1, 2.4, { color: '#ffe066' }),
+      ] },
+    ],
+  },
+
   forjador: {
     move: sway,
     phases: [
@@ -325,6 +393,30 @@ const DEFS = {
 function sweep(r, b, spin, active) {
   const dir = r.rng.chance(0.5) ? 1 : -1;
   addBeam(r, { follow: b, ang: Math.PI / 2, spin: spin * dir, warn: 1, active, w: 14, dmg: 26 * r.dmgMul, color: '#ffb547' });
+  sfx(r, 'charge');
+}
+
+/** Andanada del Titán: una fila de balas que cae, con dos huecos para pasar. */
+function broadside(r, b) {
+  const g1 = r.rng.range(50, r.W / 2 - 30), g2 = r.rng.range(r.W / 2 + 30, r.W - 50);
+  for (let x = 12; x < r.W; x += 24) {
+    if (Math.abs(x - g1) < 34 || Math.abs(x - g2) < 34) continue;
+    bshoot(r, x, b.y + 30, Math.PI / 2, 115, { r: 7, color: '#e9eef8' });
+  }
+  sfx(r, 'shotgun');
+}
+
+/** Cañón principal: rayos verticales en las columnas indicadas (avisan antes). */
+function cannon(r, b, xs) {
+  for (const x of xs) addBeam(r, { x: clamp(x, 20, r.W - 20), y: b.y + 30, ang: Math.PI / 2, warn: 1.2, active: 0.5, w: 38, dmg: 48 * r.dmgMul, color: '#e9eef8' });
+  sfx(r, 'charge');
+}
+
+/** Aspas de la Colmena: n rayos cortos que giran desde el centro. Alejarse o girar con ellos. */
+function blades(r, b, n, spin) {
+  const dir = r.rng.chance(0.5) ? 1 : -1;
+  const off = r.rng.range(0, TAU);
+  for (let i = 0; i < n; i++) addBeam(r, { follow: b, ang: off + (i / n) * TAU, spin: spin * dir, warn: 1.3, active: 1.8, w: 10, len: 380, dmg: 30 * r.dmgMul, color: '#ffe066', kind: 'blade' });
   sfx(r, 'charge');
 }
 
@@ -390,8 +482,9 @@ function makeBossPart(run, main, ox, oy, hpBase, r) {
 export function spawnBoss(run, bossId) {
   const d = BOSSES[bossId];
   const hpScale = run.hpMul * (1 + 0.22 * run.zi) * run.flags.enemyHp;
+  const tier = run.tier || 0;
   const b = {
-    id: ++run.eid, type: 'boss', isBoss: true, bossId, name: d.name, x: run.W / 2, y: -100, homeY: Math.max(run.H * 0.25, 180),
+    id: ++run.eid, type: 'boss', isBoss: true, bossId, tier, name: d.name + (['', ' Prime', ' Omega'][tier] || ''), x: run.W / 2, y: -100, homeY: Math.max(run.H * 0.25, 180),
     r: d.r, hp: d.hp * hpScale, maxHp: d.hp * hpScale, hpScale, color: d.color, t: 0, flash: 0,
     contact: 50 * run.dmgMul, vx: 55 + run.zi * 5, phase: 0, patT: 1.6, pat: 0, entered: false,
     parts: [], dead: false, stun: 0, dmgTaken: 1,
@@ -411,7 +504,7 @@ export function spawnBoss(run, bossId) {
   run.seen.bosses[bossId] = true;
   run.stats.hitThisBoss = false;
   run.bossStart = run.time;
-  emit(run, 'boss', { id: bossId, name: d.name });
+  emit(run, 'boss', { id: bossId, name: b.name });
   sfx(run, 'alarm');
   return b;
 }
@@ -449,7 +542,7 @@ function bossDefeated(run, b) {
   run.stats.fastestBoss = Math.min(run.stats.fastestBoss, secs);
   if (!run.stats.hitThisBoss) run.stats.cleanBosses++;
   run.bossesKilled.push(b.bossId);
-  run.score += 1000 * (run.zi + 1);
+  run.score += 1000 * (run.zi + 1) * (1 + (run.tier || 0));
   banner(run, 'JEFE DERROTADO', b.name + (first ? ' · ¡primera vez! Doble botín' : ''), 2.8, '#ffb547');
   sfx(run, 'victory');
   emit(run, 'vibrate', { ms: 200 });
@@ -478,7 +571,7 @@ export function updateBoss(run, dt) {
     } else {
       b.x += (run.W / 2 - b.x) * Math.min(1, dt * 3);
       b.y = -100 + (b.homeY + 100) * k;
-      for (const p of b.parts) if (p !== b) { p.x = b.x + p.side * 78; p.y = b.y + 20; }
+      for (const p of b.parts) if (p !== b) { p.x = b.x + (p.ox ?? p.side * 78); p.y = b.y + (p.oy ?? 20); }
     }
     if (k >= 1) {
       b.entered = true;
@@ -508,7 +601,17 @@ export function updateBoss(run, dt) {
     const atk = phase.attacks[b.pat % phase.attacks.length];
     b.pat++;
     atk(run, b);
-    b.patT = (b.patGap || phase.gap) / Math.min(1.35, run.fireMul);
+    b.patT = (b.patGap || phase.gap) / Math.min(1.35, run.fireMul) / (1 + 0.12 * (b.tier || 0));
+  }
+  // Versiones Prime y Omega: con poca vida se enfurecen y disparan anillos extra.
+  if (b.tier >= 1 && frac < 0.25) {
+    if (!b.enraged) {
+      b.enraged = true;
+      banner(run, '¡ENFURECIDO!', b.name, 1.4, '#ff5d73');
+      sfx(run, 'alarm');
+    }
+    b.rageT = (b.rageT || 0) - dt;
+    if (b.rageT <= 0) { b.rageT = 1.5 - 0.3 * b.tier; ringShot(run, b, 10, 95, { offset: b.t * 1.3 }); }
   }
   // Choque con la nave
   const p = run.player;

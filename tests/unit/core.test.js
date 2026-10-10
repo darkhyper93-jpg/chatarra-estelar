@@ -85,3 +85,9 @@ test('utilidades', () => {
   assert.equal(arr.length, 2);
   assert.equal(esc('<b>"hola"</b>'), '&lt;b&gt;&quot;hola&quot;&lt;/b&gt;');
 });
+
+test('el guardado viejo pasa su récord a la galaxia 1', () => {
+  const s = migrate({ best: { sector: 27 } });
+  assert.equal(s.galaxies.best.cinturon, 27);
+  assert.deepEqual(s.shipTree, {});
+});

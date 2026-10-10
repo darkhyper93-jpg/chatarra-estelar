@@ -11,7 +11,9 @@ export const BOSSES = {
   reina:      { name: 'Reina Coral',    hp: 1500, r: 44, color: '#ff6fb1', desc: 'Se teletransporta y dispara pétalos. En la segunda fase crea reflejos.' },
   gemelas:    { name: 'Bobinas Gemelas', hp: 950,  r: 36, color: '#9fb4ff', desc: 'Dos núcleos unidos por un rayo eléctrico. No cruces entre ellos. Cuando sus láseres se ponen blancos, corréte.' },
   ojo:        { name: 'Ojo del Vacío',  hp: 1700, r: 50, color: '#b9a0ff', desc: 'Te atrae con su gravedad y mira con un rayo enorme. Tiene tres fases.' },
-  forjador:   { name: 'El Forjador',    hp: 2400, r: 52, color: '#ffd166', desc: 'El jefe final. Martillos, llamaradas y los ataques de todos los demás.' },
+  titan:      { name: 'Titán Acorazado', hp: 1600, r: 50, color: '#c7d0e0', desc: 'Un acorazado con cuatro torretas. Mientras tenga más de dos, su casco casi no recibe daño.', turret: 380 },
+  colmena:    { name: 'La Colmena',     hp: 2100, r: 50, color: '#ffe066', desc: 'Suelta enjambres sin parar y gira seis rayos como aspas.' },
+  forjador:   { name: 'El Forjador',    hp: 2400, r: 52, color: '#ffd166', desc: 'El jefe final de cada galaxia. Martillos, llamaradas y los ataques de todos los demás.' },
 };
 
-export const BOSS_ORDER = ['recolector', 'matriarca', 'coloso', 'desguace', 'reina', 'gemelas', 'ojo', 'forjador'];
+export const BOSS_ORDER = ['recolector', 'matriarca', 'coloso', 'desguace', 'reina', 'gemelas', 'ojo', 'titan', 'colmena', 'forjador'];

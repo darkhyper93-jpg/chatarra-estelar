@@ -8,7 +8,7 @@ import { clamp, compact } from '../core/util.js';
 import { SHIPS } from '../data/ships.js';
 import { WEAPON_IDS } from '../data/weapons.js';
 import { mergeFlags, DIFFICULTIES } from '../data/modes.js';
-import { firstSectorOfZone, zoneOf } from '../data/zones.js';
+import { GALAXIES, firstSectorOfZone, zoneOf } from '../data/zones.js';
 import { baseStats, recomputeStats, xpNeed } from './stats.js';
 import { setDifficulty, updateDirector } from './director.js';
 import { spawnEnemy, updateEnemies } from './enemies.js';
@@ -32,10 +32,12 @@ export function createRun(opts) {
   const mods = mode === 'daily' ? daily.mods.slice() : [];
   const seed = opts.seed ?? (mode === 'daily' ? daily.seed : (Date.now() ^ (Math.random() * 1e9)) >>> 0);
   const startZone = mode === 'campaign' ? (opts.startZone || 0) : 0;
+  const galaxy = mode === 'campaign' ? Math.max(0, Math.min(GALAXIES.length - 1, opts.galaxy || 0)) : 0;
   const H = clamp(opts.H || 720, 600, 920);
 
   const run = {
     mode, seed, W: WORLD_W, H, rng: createRng(seed), noFx: !!opts.noFx, god: !!opts.god,
+    galaxy, galaxyMul: GALAXIES[galaxy].scrap,
     diffId: mode === 'daily' ? 'normal' : (DIFFICULTIES[opts.difficulty] ? opts.difficulty : 'normal'),
     hangar: Object.assign({}, save.hangar), settings: save.settings || {},
     bossesBefore: Object.assign({}, save.bosses), mods, flags: mergeFlags(mods),
@@ -54,6 +56,7 @@ export function createRun(opts) {
     xpNeed,
   };
   run.diff = DIFFICULTIES[run.diffId];
+  run.tree = Object.assign({}, (save.shipTree || {})[shipId]);
   run.spawn = (type, x, y, o) => spawnEnemy(run, type, x, y, o);
   run.later = (t, fn) => run.timers.push({ t, fn, boss: run.boss });
 
@@ -74,8 +77,10 @@ export function createRun(opts) {
   run.banishes = p.stats.banishes;
   run.seen.weapons[ship.weapon] = true;
 
-  // Armas extra del modificador "Arsenal"
-  for (let i = 0; i < run.flags.extraWeapons; i++) {
+  // El arma propia de la nave puede empezar más arriba (árbol de la nave)
+  p.weapons[0].lvl = Math.min(7, 1 + p.stats.sigLevel);
+  // Armas extra del modificador "Arsenal" o de la nave Quimera
+  for (let i = 0; i < run.flags.extraWeapons + p.stats.extraWeapons; i++) {
     const free = WEAPON_IDS.filter(id => !p.weapons.some(w => w.id === id));
     const id = run.rng.pick(free);
     p.weapons.push({ id, lvl: 1, evolved: false, t: 0.3, on: 0 });
@@ -92,7 +97,7 @@ export function createRun(opts) {
   setDifficulty(run);
   run.eventAt = run.rng.range(7, 17);
   if (mode === 'bossrush') run.rushIndex = null;
-  else banner(run, 'SECTOR ' + run.sector, zoneOf(run.sector).name, 2.6);
+  else banner(run, galaxy ? GALAXIES[galaxy].name.toUpperCase() : 'SECTOR ' + run.sector, galaxy ? 'Sector ' + run.sector + ' · ' + zoneOf(run.sector, galaxy).name : zoneOf(run.sector, galaxy).name, 2.6);
   sfx(run, 'sector');
   return run;
 }
@@ -121,7 +126,7 @@ function updatePlayer(run, dt) {
   if (s.regen) p.hp = Math.min(s.maxHp, p.hp + s.regen * dt);
   if (p.comboT > 0) { p.comboT -= dt; if (p.comboT <= 0) p.combo = 0; }
   if (p.shield < s.shieldMax) {
-    p.shieldT += dt;
+    p.shieldT += dt * s.shieldRate;
     if (p.shieldT >= 8) { p.shield++; p.shieldT = 0; sfx(run, 'shield'); }
   }
 }

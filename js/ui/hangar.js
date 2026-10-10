@@ -8,7 +8,9 @@ import { HANGAR, HANGAR_GROUPS } from '../data/hangar.js';
 import { SHIPS, SHIP_IDS } from '../data/ships.js';
 import { ACH_BY_ID } from '../data/achievements.js';
 import { WEAPONS } from '../data/weapons.js';
-import { nextCost, buyHangar, buyOrSelectShip, refundHangar, checkAchievements } from '../game/progress.js';
+import { nextCost, buyHangar, buyOrSelectShip, refundHangar, checkAchievements, nextTreeCost, buyTree, galaxiesCleared } from '../game/progress.js';
+import { TREES, TIER_NEEDS, treeLevels, treeMax, tierOpen } from '../data/trees.js';
+import { hangarMax } from '../data/hangar.js';
 import { drawShip } from '../render/sprites.js';
 
 let tab = 'up';
@@ -22,20 +24,23 @@ export function renderHangar(app) {
   const save = app.save;
   const s = $('s-hangar');
   let h = `<div class="h-head"><button class="mini" id="hBack">← Volver</button><div class="bank"><small>En bodega</small><b>${fmt(save.scrap)} kg</b></div></div>
-    <div class="tabs" role="tablist"><button data-tab="up" class="${tab === 'up' ? 'on' : ''}">Mejoras</button><button data-tab="ships" class="${tab === 'ships' ? 'on' : ''}">Naves</button></div>
+    <div class="tabs" role="tablist"><button data-tab="up" class="${tab === 'up' ? 'on' : ''}">General</button><button data-tab="tree" class="${tab === 'tree' ? 'on' : ''}">${esc(SHIPS[save.ship].name)}</button><button data-tab="ships" class="${tab === 'ships' ? 'on' : ''}">Naves</button></div>
     <div class="list">`;
   if (tab === 'up') {
     for (const g of HANGAR_GROUPS) {
       h += `<p class="group-title">${g.name}</p>`;
       for (const m of HANGAR.filter(x => x.group === g.id)) {
         const lv = save.hangar[m.id] || 0, c = nextCost(save, m.id), can = c != null && save.scrap >= c;
-        h += `<div class="row"><div class="info"><h3>${esc(m.name)}</h3><p>${esc(m.desc)}</p>${pips(lv, m.max)}</div>
+        const mx = hangarMax(m, galaxiesCleared(save));
+        h += `<div class="row"><div class="info"><h3>${esc(m.name)}</h3><p>${esc(m.desc)}</p>${pips(lv, mx)}</div>
           <button class="buy ${can ? 'can' : ''}" data-buy="${m.id}" ${can ? '' : 'disabled'}>${c == null ? 'Completo' : fmt(c) + ' kg'}</button></div>`;
       }
     }
     const spent = Object.keys(save.hangar).length;
     h += `<button class="btn small" id="hRefund" ${spent ? '' : 'disabled'}>Devolver todas las mejoras</button>
-      <p class="hint">Te devuelve toda la chatarra gastada para que pruebes otra combinación.</p>`;
+      <p class="hint">Te devuelve toda la chatarra gastada para que pruebes otra combinación. Cada galaxia completada sube el máximo de varias mejoras.</p>`;
+  } else if (tab === 'tree') {
+    h += treeHTML(save, save.ship);
   } else {
     for (const id of SHIP_IDS) {
       const sh = SHIPS[id], own = save.ships[id], sel = save.ship === id;
@@ -48,6 +53,7 @@ export function renderHangar(app) {
       h += `<div class="row${sel ? ' sel' : ''}${!own && sh.unlock ? ' locked' : ''}"><div class="info">
         <h3><canvas class="shipprev" data-ship="${id}" width="64" height="64" style="width:32px;height:32px"></canvas>${esc(sh.name)}</h3>
         <p>${esc(sh.desc)}</p><p class="trait">${esc(sh.trait)} Arma inicial: ${esc(WEAPONS[sh.weapon].name)}.</p>${lock}
+        ${own ? `<p>Árbol: ${treeLevels(save, id)}/${treeMax(id)} niveles</p>` : ''}
         <div class="shipstats">${statBar('Casco', sh.hp / 160)}${statBar('Velocidad', sh.speed / 1.25)}</div></div>${btn}</div>`;
     }
   }
@@ -60,6 +66,9 @@ export function renderHangar(app) {
   });
   $('hBack').onclick = () => { app.sfx('click'); app.back(); };
   s.querySelectorAll('[data-tab]').forEach(b => b.addEventListener('click', () => { tab = b.dataset.tab; app.sfx('click'); renderHangar(app); }));
+  s.querySelectorAll('[data-node]').forEach(b => b.addEventListener('click', () => {
+    if (buyTree(save, save.ship, b.dataset.node)) { app.sfx('buy'); afterChange(app); } else app.sfx('deny');
+  }));
   s.querySelectorAll('[data-buy]').forEach(b => b.addEventListener('click', () => {
     if (buyHangar(save, b.dataset.buy)) { app.sfx('buy'); afterChange(app); } else app.sfx('deny');
   }));
@@ -80,6 +89,27 @@ export function renderHangar(app) {
   const scroll = s.scrollTop;
   showScreen('s-hangar');
   s.scrollTop = scroll;
+}
+
+/** Árbol de mejoras únicas de una nave, por escalones. */
+function treeHTML(save, ship) {
+  const nodes = TREES[ship];
+  const lv = treeLevels(save, ship);
+  let h = `<p class="hint">Mejoras exclusivas de la ${esc(SHIPS[ship].name)}: sólo funcionan cuando volás con ella. Comprá niveles para abrir los escalones de abajo.</p>
+    <div class="progress-line"><div class="bar"><i style="width:${(lv / treeMax(ship)) * 100}%"></i></div>${lv}/${treeMax(ship)}</div>`;
+  for (let tier = 1; tier <= 4; tier++) {
+    const open = tierOpen(save, ship, tier);
+    h += `<p class="group-title">Escalón ${tier}${open ? '' : ` · se abre con ${TIER_NEEDS[tier]} niveles`}</p>`;
+    for (const nd of nodes.filter(x => x.tier === tier)) {
+      const l = (save.shipTree[ship] || {})[nd.id] || 0;
+      const c = nextTreeCost(save, ship, nd.id);
+      const can = c != null && save.scrap >= c;
+      const label = l >= nd.max ? 'Completo' : !open ? icon('lock', 16) : fmt(c) + ' kg';
+      h += `<div class="row${open ? '' : ' locked'}${tier === 4 ? ' sel' : ''}"><div class="info"><h3>${esc(nd.name)}</h3><p>${esc(nd.desc)}</p>${pips(l, nd.max)}</div>
+        <button class="buy ${can ? 'can' : ''}" data-node="${nd.id}" ${can ? '' : 'disabled'}>${label}</button></div>`;
+    }
+  }
+  return h;
 }
 
 function afterChange(app) {

@@ -20,19 +20,25 @@ Queda un ícono como cualquier otra app; se abre en pantalla completa.
 
 ### Durante una partida
 
-- Cada **sector** dura 30 segundos. Cada 5 sectores aparece un **jefe**.
+- El juego tiene **3 galaxias**. Cada una tiene **10 zonas de 5 sectores** (50 sectores) y **10 jefes**. Al vencer al jefe de la zona 10 completás la galaxia y se abre la siguiente, que es más difícil y da más chatarra.
+- Cada **sector** dura 30 segundos. Cada 5 sectores aparece un **jefe**. En la galaxia 2 los jefes vuelven en versión **Prime** y en la 3 en versión **Omega**: más balas, más rápidos y con una fase de furia al final.
+- Los jefes pegan muy fuerte: hay que esquivar. Los láseres que te apuntan se ponen **blancos** medio segundo antes de disparar: ahí es cuando tenés que correrte.
 - Los enemigos sueltan **cristales de experiencia**. Al subir de nivel elegís una mejora entre 3 (o 4) cartas.
 - Podés llevar hasta **4 armas** y **5 piezas pasivas**. Cada arma sube hasta el nivel 7.
 - **Evoluciones:** si un arma llega al nivel 7 y tenés la pasiva justa, aparece la opción de evolucionarla a una versión mucho más fuerte. Los **cofres** (que sueltan los enemigos élite, los convoyes y los jefes) siempre ofrecen la evolución si está disponible.
+- **Sobrecarga:** un arma evolucionada se puede seguir mejorando 5 niveles más.
+- **Dificultad:** Fácil, Normal, Difícil y Pesadilla (esta última se abre al vencer a El Forjador). Las más difíciles dan más chatarra.
 - Herramientas: **Cambiar** (otras opciones), **Descartar** (borrar una opción para toda la partida) y **Saltar**.
 - **Eventos:** convoyes de carga que escapan, cápsulas de suministros, lluvias de meteoritos y emboscadas élite.
 
 ### Entre partidas
 
-- **Hangar:** 20 mejoras permanentes en 4 grupos (ataque, defensa, utilidad y táctica) y 7 naves con armas y rasgos distintos. Se pueden devolver las mejoras para probar otra combinación.
-- **Logros:** 33 logros que dan chatarra. Dos naves se desbloquean sólo con logros.
+- **Hangar general:** 20 mejoras permanentes en 4 grupos (ataque, defensa, utilidad y táctica). Cada galaxia completada sube el máximo de varias de ellas. Se pueden devolver las mejoras para probar otra combinación.
+- **12 naves**, cada una con su arma inicial y un rasgo propio.
+- **Árbol de cada nave:** 8 mejoras exclusivas por nave (96 en total) en 4 escalones que se abren a medida que comprás. Sólo funcionan con esa nave. En el último escalón están las más fuertes, como evolucionar el arma sin necesitar la pasiva.
+- **Logros:** 39 logros que dan chatarra. Cuatro naves se desbloquean con logros (completar galaxias o desafíos diarios).
 - **Desafío diario:** todos juegan el mismo día con la misma nave y los mismos dos modificadores. Ideal para competir con amigos.
-- **Modo Jefes:** los 8 jefes seguidos. Se abre al vencer a El Desguace.
+- **Modo Jefes:** los 10 jefes seguidos. Se abre al vencer a El Desguace.
 - **Códice:** enciclopedia de enemigos, jefes, armas y pasivas que vas descubriendo.
 - **Pasar el progreso a otro dispositivo:** en Ajustes hay un código para copiar y pegar.
 
@@ -40,17 +46,25 @@ Queda un ícono como cualquier otra app; se abre en pantalla completa.
 
 | | Cantidad |
 |---|---|
-| Zonas (cada una con su peligro propio) | 8 |
-| Jefes, con 2 o 3 fases cada uno | 8 |
-| Tipos de enemigos y obstáculos | 20 |
+| Galaxias | 3 |
+| Zonas (cada una con su peligro propio) | 30 |
+| Sectores | 150 |
+| Jefes, con 2 o 3 fases (más una de furia en Prime y Omega) | 10, en 3 versiones |
+| Tipos de enemigos y obstáculos | 26 |
 | Armas / evoluciones | 10 / 10 |
 | Piezas pasivas | 11 |
-| Naves | 7 |
-| Mejoras del hangar | 20 |
-| Logros | 33 |
+| Naves | 12 |
+| Mejoras del hangar general | 20 (ampliables) |
+| Mejoras únicas de naves | 96 |
+| Logros | 39 |
+| Niveles de dificultad | 4 |
 | Modos de juego | Campaña, Desafío diario, Modo Jefes |
 
-Después del sector 40 empieza el **ciclo+**: las zonas se repiten, pero mucho más difíciles.
+| Galaxia | Zonas | Novedades |
+|---|---|---|
+| 1. Cinturón de Chatarra | Anillo de Óxido, Deriva Ámbar, Fosa de Hielo, Cementerio de Cargueros, Nebulosa Coral, Tormenta de Iones, Vacío Profundo, Astillero Fantasma, Panal Estelar, Núcleo Estelar | Jefes nuevos: Titán Acorazado y La Colmena |
+| 2. Nebulosa Carmesí | Bruma Escarlata, Arrecife de Sangre, Dunas de Rubí, Fragua Carmesí, Jardín de Espinas, Cañón Rojo, Velo Ardiente, Ruinas Rojas, Corona Roja, Corazón Carmesí | Lancero, Nodriza, Fantasma y Mortero. Jefes Prime |
+| 3. Vórtice Abisal | Umbral, Fosa Silente, Jardín Negro, Espiral Rota, Cementerio de Estrellas, Mar de Plasma, Laberinto Gravitatorio, Horizonte de Eventos, Ojo de la Tormenta, Singularidad | Divisor y Acorazado. Jefes Omega |
 
 ### Evoluciones
 
@@ -110,7 +124,7 @@ npm run test:e2e     # pruebas en un navegador con tamaño de celular (Playwrigh
 ```
 
 - **Pruebas de lógica:** guardado, código de progreso, mejoras, evoluciones, hangar, logros, desafío diario.
-- **Simulaciones:** un piloto automático juega partidas completas. Se verifica que cada jefe se pueda vencer en un tiempo razonable, que la campaña completa y el Modo Jefes se puedan terminar sin errores, que la partida sea repetible con la misma semilla y que el balance esté en un rango sano.
+- **Simulaciones:** un piloto automático juega partidas completas. Hay dos estrategias: una que elige mejoras casi al azar y otra «inteligente» que va directo a las evoluciones, junta los cristales y le apunta al jefe. Se verifica que cada jefe se pueda vencer en un tiempo razonable, que las 3 galaxias y el Modo Jefes se puedan terminar sin errores, que la partida sea repetible con la misma semilla y que el balance esté en un rango sano.
 - **Pruebas en navegador:** se juega como una persona en pantallas de Android y iPhone: moverse, subir de nivel, pausar, morir, comprar en el hangar, recargar la página, ajustes, los 8 jefes, y que funcione sin internet.
 
 Las pruebas corren solas en GitHub cada vez que se sube un cambio (pestaña **Actions**).

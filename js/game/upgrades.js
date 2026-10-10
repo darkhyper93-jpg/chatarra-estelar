@@ -26,9 +26,19 @@ export function describe(run, kind, id) {
     const def = PASSIVES[id], l = p.passives[id] || 0;
     return { kind, id, name: def.name, desc: def.desc, tag: l ? 'Pasiva' : 'Nueva pasiva', from: l, lvl: l + 1, max: def.max };
   }
+  if (kind === 'over') {
+    const w = p.weapons.find(x => x.id === id);
+    return { kind, id, name: 'Sobrecarga: ' + WEAPONS[id].evo.name, desc: '+15% de daño de esta arma.', tag: 'Sobrecarga', from: w.over || 0, lvl: (w.over || 0) + 1, max: OVER_MAX };
+  }
   if (kind === 'heal') return { kind, id: 'heal', name: 'Reparación total', desc: 'Repara todo el casco.', tag: 'Suministro' };
   return { kind: 'scrap', id: 'scrap', name: 'Botín de emergencia', desc: '+' + scrapBonus(run) + ' kg de chatarra.', tag: 'Suministro' };
 }
+
+/** Máximo de niveles de sobrecarga por arma evolucionada. */
+export const OVER_MAX = 5;
+
+/** true si el arma puede evolucionar sin su pasiva (árboles de nave). */
+const evoFree = (p, id) => p.stats.evoFreeAll || !!p.stats.evoFree[id];
 
 const scrapBonus = run => Math.round(5 + run.sector * 0.4);
 
@@ -40,8 +50,9 @@ export function candidatePool(run) {
   const evoKeys = new Set(p.weapons.filter(w => !w.evolved).map(w => WEAPONS[w.id].evo.needs));
   for (const w of p.weapons) {
     const def = WEAPONS[w.id];
-    if (!w.evolved && w.lvl >= WEAPON_MAX && p.passives[def.evo.needs]) pool.push({ kind: 'evo', id: w.id, w: 8 });
+    if (!w.evolved && w.lvl >= WEAPON_MAX && (p.passives[def.evo.needs] || evoFree(p, w.id))) pool.push({ kind: 'evo', id: w.id, w: 8 });
     else if (!w.evolved && w.lvl < WEAPON_MAX) pool.push({ kind: 'weapon', id: w.id, w: 1.3 });
+    else if (w.evolved && (w.over || 0) < OVER_MAX) pool.push({ kind: 'over', id: w.id, w: 0.9 });
   }
   if (p.weapons.length < p.stats.slots) {
     for (const id of WEAPON_IDS) if (!owned.has(id)) pool.push({ kind: 'weapon', id, w: p.weapons.length >= 3 ? 0.55 : 0.85 });
@@ -106,6 +117,12 @@ export function applyChoice(run, card) {
       }
       break;
     }
+    case 'over': {
+      const w = p.weapons.find(x => x.id === card.id);
+      if (w && w.evolved) w.over = Math.min(OVER_MAX, (w.over || 0) + 1);
+      run.stats.maxOver = Math.max(run.stats.maxOver || 0, w ? w.over : 0);
+      break;
+    }
     case 'passive':
       p.passives[card.id] = Math.min(PASSIVES[card.id].max, (p.passives[card.id] || 0) + 1);
       run.seen.passives[card.id] = true;
@@ -122,7 +139,7 @@ export function applyChoice(run, card) {
 
 /** Borra una opción para el resto de la partida. Devuelve true si se pudo. */
 export function banish(run, card) {
-  if (run.banishes <= 0 || card.kind === 'heal' || card.kind === 'scrap' || card.kind === 'evo') return false;
+  if (run.banishes <= 0 || card.kind === 'heal' || card.kind === 'scrap' || card.kind === 'evo' || card.kind === 'over') return false;
   run.banishes--;
   run.banished.add(keyOf(card));
   return true;

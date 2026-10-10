@@ -122,6 +122,13 @@ h2 { font-size: 28px; line-height: 1.05; }
 .mode.done small { color: var(--mint); }
 .mode:disabled { opacity: .5; }
 
+.gal { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.gal button { text-align: left; display: grid; gap: 2px; padding: 9px 10px; border-radius: 8px; border: 1.5px solid var(--line); background: var(--deep); min-width: 0; }
+.gal button b { font-family: var(--f-display); font-weight: 400; font-size: 13px; letter-spacing: .04em; }
+.gal button small { font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gal button[aria-checked=true] { border-color: var(--amber); background: var(--panel); }
+.gal button[aria-checked=true] b { color: var(--amber); }
+.gal button:disabled { opacity: .45; }
 .diff { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; margin-top: -4px; }
 .diff button { padding: 9px 2px; border: 0; background: transparent; color: var(--muted); font-size: 12px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
 .diff button + button { border-left: 1px solid var(--line); }
@@ -148,6 +155,8 @@ h2 { font-size: 28px; line-height: 1.05; }
 .card.k-passive .ci { color: var(--mint); }
 .card.k-evo { border-color: var(--violet); background: linear-gradient(160deg, rgba(185, 160, 255, .18), var(--deep) 60%); }
 .card.k-evo .ci, .card.k-evo .tag { color: var(--violet); }
+.card.k-over { border-color: var(--gold); }
+.card.k-over .ci, .card.k-over .tag { color: var(--gold); }
 .card.k-heal .ci, .card.k-heal .tag { color: var(--mint); }
 .card.k-scrap .ci, .card.k-scrap .tag { color: var(--amber); }
 .card.banishing { border-color: var(--coral); border-style: dashed; }

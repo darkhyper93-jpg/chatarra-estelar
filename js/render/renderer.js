@@ -26,6 +26,19 @@ export function drawRun(ctx, run, opts = {}) {
       ctx.strokeStyle = 'rgba(185,160,255,.5)'; ctx.lineWidth = 1.5;
       for (let i = 0; i < 3; i++) { const r = ((t * 40 + i * 50) % h.R); ctx.globalAlpha = 1 - r / h.R; ctx.beginPath(); ctx.arc(h.x, h.y, h.R - r, 0, TAU); ctx.stroke(); }
       ctx.globalAlpha = 1;
+    } else if (h.kind === 'obus') {
+      // Círculo donde cae el proyectil del mortero y el proyectil bajando
+      const k = h.t / h.warn;
+      ctx.strokeStyle = '#ffb36b';
+      ctx.lineWidth = 2;
+      ctx.globalAlpha = 0.5 + 0.4 * Math.abs(Math.sin(t * 12));
+      ctx.beginPath(); ctx.arc(h.x, h.y, h.r, 0, TAU); ctx.stroke();
+      ctx.fillStyle = 'rgba(255,179,107,.18)';
+      ctx.beginPath(); ctx.arc(h.x, h.y, h.r * k, 0, TAU); ctx.fill();
+      ctx.globalAlpha = 1;
+      const sx = h.from.x + (h.x - h.from.x) * k, sy = h.from.y + (h.y - h.from.y) * k - Math.sin(k * Math.PI) * 120;
+      ctx.fillStyle = '#ffb36b';
+      ctx.beginPath(); ctx.arc(sx, sy, 6, 0, TAU); ctx.fill();
     } else if (h.kind === 'rayo') {
       const k = h.t / h.warn;
       ctx.strokeStyle = '#9fb4ff';
@@ -96,7 +109,7 @@ export function drawRun(ctx, run, opts = {}) {
     ctx.save();
     ctx.translate(b.x, b.y);
     ctx.rotate(b.ang);
-    if (b.spin) {
+    if (b.spin && b.kind !== 'blade') {
       // Zona que va a barrer
       ctx.fillStyle = b.color;
       ctx.globalAlpha = 0.08 + 0.06 * k;

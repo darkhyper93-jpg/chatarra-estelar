@@ -78,7 +78,10 @@ test('las pasivas cambian las estadísticas y suben el casco', () => {
 });
 
 test('la dificultad crece con el sector', () => {
-  assert.ok(hpMul(10) > hpMul(5) && hpMul(41) > hpMul(40) * 1.4);
+  assert.ok(hpMul(10) > hpMul(5) && hpMul(50) > hpMul(40));
+  const g1 = newRun({ galaxy: 0 }), g2 = newRun({ galaxy: 1 }), g3 = newRun({ galaxy: 2 });
+  assert.ok(g2.hpMul > g1.hpMul * 2 && g3.hpMul > g2.hpMul * 2, 'cada galaxia es más dura');
+  assert.ok(g3.player.stats.scrapMul > g1.player.stats.scrapMul * 2, 'y paga más');
   assert.ok(dmgMul(20) > dmgMul(10));
   assert.ok(xpNeed(10) > xpNeed(2));
 });
@@ -124,6 +127,7 @@ test('los logros dan premio una sola vez y desbloquean naves', () => {
   const save = defaultSave();
   save.stats.runs = 1;
   save.bosses.forjador = 1;
+  save.galaxies.cleared.cinturon = 1;
   const got = checkAchievements(save);
   assert.ok(got.some(a => a.id === 'primer_vuelo'));
   assert.ok(got.some(a => a.id === 'campana'));
@@ -199,4 +203,64 @@ test('los láseres que apuntan se fijan antes de disparar y se pueden esquivar',
   assert.ok(moved, 'el rayo llegó a fijarse');
   assert.ok(LOCK_TIME >= 0.4, 'hay tiempo de reacción');
   assert.equal(p.hp, hp0, 'moverse después de que se fija evita el golpe');
+});
+
+test('árbol de nave: escalones, compra y efectos en la partida', async () => {
+  const { buyTree, nextTreeCost } = await import('../../js/game/progress.js');
+  const save = defaultSave();
+  save.scrap = 1e7;
+  assert.equal(buyTree(save, 'halcon', 'h_mira'), false, 'sin la nave no se compra');
+  assert.equal(nextTreeCost(save, 'gorrion', 'g_doble'), null, 'escalón 2 cerrado al principio');
+  for (let i = 0; i < 3; i++) assert.ok(buyTree(save, 'gorrion', 'g_canon'));
+  assert.ok(nextTreeCost(save, 'gorrion', 'g_doble') > 0, 'con 3 niveles se abre el escalón 2');
+  assert.ok(buyTree(save, 'gorrion', 'g_doble'));
+  const run = newRun({ save });
+  const w = run.player.weapons[0];
+  const plain = newRun();
+  assert.ok(w.s.dmg > plain.player.weapons[0].s.dmg * 1.25, 'Cañón pulido sube el daño del Bláster');
+  assert.equal(w.s.count, plain.player.weapons[0].s.count + 1, 'Ráfaga doble suma un proyectil');
+});
+
+test('evolución libre del árbol y sobrecarga después de evolucionar', () => {
+  const save = defaultSave();
+  save.shipTree.gorrion = { g_evo: 1 };
+  const run = newRun({ save });
+  const w = run.player.weapons[0];
+  w.lvl = WEAPON_MAX;
+  recomputeStats(run);
+  const evo = candidatePool(run).find(c => c.kind === 'evo');
+  assert.ok(evo, 'evoluciona sin Gatillo rápido');
+  applyChoice(run, { kind: 'evo', id: 'blaster' });
+  const dmg0 = w.s.dmg;
+  assert.ok(candidatePool(run).some(c => c.kind === 'over'), 'aparece la sobrecarga');
+  applyChoice(run, { kind: 'over', id: 'blaster' });
+  assert.equal(w.over, 1);
+  assert.ok(w.s.dmg > dmg0 * 1.1);
+});
+
+test('completar una galaxia la marca, paga más y abre la siguiente', async () => {
+  const { galaxyUnlocked } = await import('../../js/game/progress.js');
+  const save = defaultSave();
+  assert.ok(galaxyUnlocked(save, 0) && !galaxyUnlocked(save, 1));
+  const run = newRun({ save, galaxy: 0 });
+  run.sector = 50;
+  run.galaxyCleared = true;
+  run.won = true;
+  const res = finishRun(save, run, '2026-10-10');
+  assert.ok(res.firstClear);
+  assert.ok(galaxyUnlocked(save, 1) && !galaxyUnlocked(save, 2));
+  assert.equal(save.galaxies.best.cinturon, 50);
+  assert.ok(save.ships.fenix, 'el logro de la galaxia 1 da el Fénix');
+  assert.ok(res.bonus >= 1000);
+});
+
+test('el hangar crece con cada galaxia completada', () => {
+  const save = defaultSave();
+  save.scrap = 1e9;
+  let n = 0;
+  while (buyHangar(save, 'calibre')) n++;
+  assert.equal(n, 10);
+  save.galaxies.cleared.cinturon = 1;
+  while (buyHangar(save, 'calibre')) n++;
+  assert.equal(n, 15, '+5 niveles de Calibre por galaxia');
 });

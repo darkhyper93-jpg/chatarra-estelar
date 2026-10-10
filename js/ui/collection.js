@@ -10,7 +10,7 @@ import { ENEMIES } from '../data/enemies.js';
 import { BOSSES, BOSS_ORDER } from '../data/bosses.js';
 import { WEAPONS, WEAPON_IDS } from '../data/weapons.js';
 import { PASSIVES, PASSIVE_IDS } from '../data/passives.js';
-import { ZONES } from '../data/zones.js';
+import { ZONES, GALAXIES } from '../data/zones.js';
 import { drawEnemy, drawBoss } from '../render/sprites.js';
 
 /** Lista de logros. */
@@ -48,7 +48,7 @@ export function renderCodex(app) {
     BOSS_ORDER.forEach((id, i) => {
       const seen = save.seen.bosses[id], b = BOSSES[id], wins = save.bosses[id] || 0;
       h += `<div class="row codex${seen ? '' : ' unseen'}"><canvas data-boss="${id}" width="112" height="112"></canvas><div class="info">
-        <h3>${seen ? esc(b.name) : '???'}</h3><p>Zona ${i + 1}: ${esc(ZONES[i].name)}</p><p>${seen ? esc(b.desc) : 'Llegá al sector ' + (i + 1) * 5 + ' para conocerlo.'}</p>
+        <h3>${seen ? esc(b.name) : '???'}</h3><p>Zona ${i + 1} de cada galaxia (${esc(ZONES[i].name)}${seen ? ', ' + esc(GALAXIES[1].zones[i].name) + ', ' + esc(GALAXIES[2].zones[i].name) : ''})</p><p>${seen ? esc(b.desc) : 'Llegá al sector ' + (i + 1) * 5 + ' para conocerlo.'}</p>
         ${wins ? `<p class="trait">Vencido ${wins} ${wins === 1 ? 'vez' : 'veces'}</p>` : ''}</div></div>`;
     });
   } else if (tab === 'weapons') {

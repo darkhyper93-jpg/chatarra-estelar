@@ -3,7 +3,7 @@
  * internet. La lista de archivos y la versión las escribe
  * scripts/gen-sw.js (no editarlas a mano).
  */
-const VERSION = '89b30a8ab6';
+const VERSION = '7419a3facb';
 const CACHE = 'chatarra-estelar-' + VERSION;
 const FILES = [
   // <archivos>
@@ -22,6 +22,7 @@ const FILES = [
   'js/data/modes.js',
   'js/data/passives.js',
   'js/data/ships.js',
+  'js/data/trees.js',
   'js/data/weapons.js',
   'js/data/zones.js',
   'js/game/bosses.js',

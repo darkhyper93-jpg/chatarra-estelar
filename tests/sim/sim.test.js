@@ -8,9 +8,10 @@ import assert from 'node:assert/strict';
 import { defaultSave } from '../../js/core/save.js';
 import { createRun } from '../../js/game/run.js';
 import { BOSS_ORDER } from '../../js/data/bosses.js';
-import { CAMPAIGN_SECTORS } from '../../js/data/zones.js';
+import { GALAXY_SECTORS } from '../../js/data/zones.js';
 import { dailyFor } from '../../js/data/modes.js';
 import { HANGAR } from '../../js/data/hangar.js';
+import { TREES } from '../../js/data/trees.js';
 import { playRun } from './bot.js';
 
 /** Revisa que no haya números rotos ni demasiadas cosas en pantalla. */
@@ -42,15 +43,25 @@ test('cada jefe se puede vencer en un tiempo razonable', () => {
   });
 });
 
-test('la campaña completa se puede jugar sin errores hasta el ciclo+', () => {
-  const save = defaultSave();
-  for (const h of HANGAR) save.hangar[h.id] = h.max;
-  const run = createRun({ save, seed: 5, H: 760, noFx: true, god: true });
-  playRun(run, 3000, r => { if (r.time % 5 < 1 / 60) healthy(r); if (r.sector > CAMPAIGN_SECTORS) return false; });
-  assert.ok(run.sector > CAMPAIGN_SECTORS, 'llegó al sector ' + run.sector);
-  assert.equal(run.bossesKilled.length, BOSS_ORDER.length);
-  assert.ok(run.stats.evolved.length >= 1, 'evolucionó al menos un arma');
-});
+for (const [g, ship] of [[0, 'gorrion'], [1, 'avispa'], [2, 'quimera']]) {
+  test(`la galaxia ${g + 1} se puede completar sin errores`, () => {
+    const save = defaultSave();
+    for (const h of HANGAR) save.hangar[h.id] = h.max + (h.ext || 0) * 2;
+    save.ship = ship;
+    save.ships[ship] = true;
+    save.shipTree[ship] = Object.fromEntries(TREES[ship].map(n => [n.id, n.max]));
+    const run = createRun({ save, seed: 5 + g, H: 760, noFx: true, god: true, galaxy: g });
+    run.smartBot = true;
+    const types = new Set();
+    playRun(run, 4500, r => { if (r.time % 5 < 1 / 60) healthy(r); for (const e of r.enemies) types.add(e.type); });
+    assert.equal(run.phase, 'over');
+    assert.ok(run.won && run.galaxyCleared, 'completó la galaxia (sector ' + run.sector + ')');
+    assert.equal(run.sector, GALAXY_SECTORS);
+    assert.equal(run.bossesKilled.length, BOSS_ORDER.length);
+    if (g >= 1) assert.ok(types.has('lancero') && types.has('mortero'), 'aparecen enemigos nuevos');
+    if (g >= 2) assert.ok(types.has('divisor') && types.has('acorazado'), 'y los de la galaxia 3');
+  });
+}
 
 test('el Modo Jefes termina con victoria', () => {
   const save = defaultSave();
@@ -58,8 +69,8 @@ test('el Modo Jefes termina con victoria', () => {
   const run = createRun({ save, mode: 'bossrush', seed: 3, H: 760, noFx: true, god: true });
   playRun(run, 2500, r => { healthy(r); });
   assert.equal(run.phase, 'over');
-  assert.ok(run.won, 'venció a los 8');
-  assert.equal(run.bossesKilled.length, 8);
+  assert.ok(run.won, 'venció a todos');
+  assert.equal(run.bossesKilled.length, BOSS_ORDER.length);
 });
 
 test('la misma semilla y las mismas acciones dan la misma partida', () => {

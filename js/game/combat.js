@@ -25,7 +25,12 @@ export function critRoll(run, extra = 0) {
 export function damageEnemy(run, e, dmg, o = {}) {
   if (e.dead || e.invuln) return 0;
   const crit = o.crit || 1;
+  const ps = run.player.stats;
   let d = dmg * crit * (e.dmgTaken ?? 1);
+  // Efectos de los árboles de nave
+  if (e.isBoss && ps.bossDmg) d *= 1 + ps.bossDmg;
+  if (ps.lowHpMight && run.player.hp < ps.maxHp * 0.4) d *= 1 + ps.lowHpMight;
+  if (ps.comboMight) d *= 1 + Math.min(0.3, Math.floor(run.player.combo / 10) * ps.comboMight);
   if (e.shield > 0 && !o.area) {
     const absorbed = Math.min(e.shield, d);
     e.shield -= absorbed;
@@ -69,6 +74,7 @@ export function killEnemy(run, e) {
     run.kills++;
     p.combo++;
     p.comboT = 2.5;
+    if (p.stats.killHeal) p.hp = Math.min(p.stats.maxHp, p.hp + p.stats.killHeal);
     if (p.combo > run.stats.maxCombo) run.stats.maxCombo = p.combo;
   }
   const luck = p.stats.luck;
@@ -86,6 +92,14 @@ export function killEnemy(run, e) {
   switch (e.type) {
     case 'tanque':
       for (let i = 0; i < 3; i++) run.spawn('chispa', e.x + (i - 1) * 14, e.y, { summon: true });
+      break;
+    case 'divisor':
+      if ((e.gen || 0) < 2) {
+        for (const s of [-1, 1]) {
+          const k = run.spawn('divisor', e.x + s * e.r * 0.6, e.y, { gen: (e.gen || 0) + 1, size: 0.72, hpMul: 0.45 * Math.pow(0.45, e.gen || 0), elite: false });
+          k.bx = k.x;
+        }
+      }
       break;
     case 'espora':
       explodeAt(run, e.x, e.y, 75, 30 * run.hpMul + 20, '#ff9bd0');
@@ -125,7 +139,10 @@ export function hitPlayer(run, dmg) {
   }
   dmg *= 1 - Math.min(0.5, p.stats.armor * 0.04);
   if (!run.god) p.hp -= dmg;
-  p.inv = 0.9;
+  p.inv = 0.9 + p.stats.invBonus;
+  if (p.stats.hurtNova) {
+    run.novas.push({ x: p.x, y: p.y, r: 10, R: 90 + 30 * p.stats.hurtNova, speed: 520, dmg: 25 * p.stats.hurtNova * run.hpMul, hit: new Set(), dead: false, evo: false });
+  }
   run.stats.hitThisSector = true;
   run.stats.hitThisBoss = true;
   run.hurt = 0.35;

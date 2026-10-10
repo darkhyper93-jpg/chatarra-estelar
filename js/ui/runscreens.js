@@ -8,6 +8,8 @@ import { esc, fmt, fmtTime } from '../core/util.js';
 import { WEAPONS, WEAPON_MAX } from '../data/weapons.js';
 import { PASSIVES } from '../data/passives.js';
 import { SHIPS } from '../data/ships.js';
+import { GALAXIES } from '../data/zones.js';
+import { BOSS_ORDER } from '../data/bosses.js';
 import { rollChoices, applyChoice, banish } from '../game/upgrades.js';
 
 /* ------------------------------ mejora ------------------------------ */
@@ -40,6 +42,9 @@ function cardHTML(run, c, i) {
     extra = pips(c.from || 0, PASSIVES[c.id].max, true);
     const keys = run.player.weapons.filter(w => !w.evolved && WEAPONS[w.id].evo.needs === c.id);
     if (keys.length) extra += `<span class="need">Llave para evolucionar ${esc(WEAPONS[keys[0].id].name)}</span>`;
+  } else if (c.kind === 'over') {
+    lvlTxt = `Nv ${c.from} → ${c.lvl}`;
+    extra = pips(c.from || 0, c.max, true);
   } else if (c.kind === 'evo') {
     lvlTxt = '★';
     extra = `<span class="need">${esc(c.base)} se transforma</span>`;
@@ -134,7 +139,7 @@ function buildHTML(run) {
 /** Muestra la pausa. */
 export function renderPause(app, run) {
   const s = $('s-pause');
-  const where = run.mode === 'bossrush' ? 'Modo Jefes' : `Sector ${run.sector} · ${run.zone.name}`;
+  const where = run.mode === 'bossrush' ? 'Modo Jefes' : `Galaxia ${(run.galaxy || 0) + 1} · Sector ${run.sector} · ${run.zone.name}`;
   s.innerHTML = `<p class="eyebrow">${esc(where)}</p><h2>En pausa</h2>
     <p class="eyebrow">Tu equipo</p>${buildHTML(run)}
     <button class="btn primary" id="pResume">Continuar</button>
@@ -153,11 +158,14 @@ export function renderPause(app, run) {
 /** Resumen al terminar la partida. */
 export function renderOver(app, run, res) {
   const s = $('s-over');
-  const title = run.won ? '¡Venciste a los 8 jefes!' : run.mode === 'bossrush' ? `Caíste ante el jefe ${run.rushIndex + 1}` : `Llegaste al sector ${run.sector}`;
+  const galName = GALAXIES[run.galaxy || 0].name;
+  const title = run.galaxyCleared ? `¡${galName} completada!` : run.won ? `¡Venciste a los ${BOSS_ORDER.length} jefes!` : run.mode === 'bossrush' ? `Caíste ante el jefe ${run.rushIndex + 1}` : `Llegaste al sector ${run.sector}` + ((run.galaxy || 0) ? ` de la galaxia ${run.galaxy + 1}` : '');
   const eyebrow = (run.quit ? 'Regreso a la base' : run.won ? 'Victoria' : 'Nave destruida') + (run.diffId !== 'normal' ? ' · ' + run.diff.name : '');
   const ach = res.achievements.length
     ? `<div class="newach">${res.achievements.map(a => `<div>${icon('trophy', 20)}${esc(a.name)}<small>+${fmt(a.reward)} kg</small></div>`).join('')}</div>` : '';
-  const badges = [res.recordSector ? '<span class="badge">Nuevo récord de sector</span>' : '', res.recordScore && !res.recordSector ? '<span class="badge">Nuevo récord de puntos</span>' : '', res.dailyBonus ? '<span class="badge gold">Desafío completado</span>' : ''].join('');
+  const nextG = (run.galaxy || 0) + 1;
+  const goNext = run.galaxyCleared && nextG < GALAXIES.length;
+  const badges = [res.firstClear ? `<span class="badge gold">Nueva galaxia: ${esc(nextG < GALAXIES.length ? GALAXIES[nextG].name : 'todas completas')}</span>` : '', res.recordSector ? '<span class="badge">Nuevo récord de sector</span>' : '', res.recordScore && !res.recordSector ? '<span class="badge">Nuevo récord de puntos</span>' : '', res.dailyBonus ? '<span class="badge gold">Desafío completado</span>' : ''].join('');
   s.innerHTML = `<p class="eyebrow">${eyebrow}</p><h2>${esc(title)}</h2>
     ${badges ? `<div class="chips">${badges}</div>` : ''}
     <dl class="sum">
@@ -170,10 +178,12 @@ export function renderOver(app, run, res) {
     </dl>
     <div class="gain">+<b>${fmt(res.gain)}</b> kg a la bodega ${res.bonus ? `<small>(incluye ${fmt(res.bonus)} por distancia${res.dailyBonus ? ' y ' + fmt(res.dailyBonus) + ' del desafío' : ''})</small>` : ''}</div>
     ${ach}
-    <div class="row2"><button class="btn primary" id="oAgain">Otra vez</button><button class="btn" id="oHangar">Hangar</button></div>
+    ${goNext ? `<button class="btn primary" id="oNext">Ir a la galaxia ${nextG + 1}</button>` : ''}
+    <div class="row2"><button class="btn ${goNext ? '' : 'primary'}" id="oAgain">Otra vez</button><button class="btn" id="oHangar">Hangar</button></div>
     <div class="row2"><button class="btn small" id="oShare">Compartir</button><button class="btn small" id="oMenu">Menú</button></div>
     <p class="msg" id="oMsg"></p>`;
-  $('oAgain').onclick = () => app.startRun({ mode: run.mode, startZone: run.startZone });
+  $('oAgain').onclick = () => app.startRun({ mode: run.mode, startZone: run.startZone, galaxy: run.galaxy });
+  if (goNext) $('oNext').onclick = () => { app.save.settings.galaxy = nextG; app.persist(); app.startRun({ mode: 'campaign', startZone: 0, galaxy: nextG }); };
   $('oHangar').onclick = () => app.openHangar();
   $('oMenu').onclick = () => app.toMenu();
   $('oShare').onclick = async () => {

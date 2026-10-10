@@ -3,12 +3,12 @@
  * hace aparecer enemigos, lanza eventos (convoyes, emboscadas, meteoritos)
  * y controla los peligros propios de cada zona.
  */
-import { SECTOR_SECONDS, ZONES, isBossSector, zoneIndexOf, zoneOf } from '../data/zones.js';
-import { BOSS_ORDER } from '../data/bosses.js';
+import { SECTOR_SECONDS, GALAXIES, GALAXY_SECTORS, ZONES, isBossSector, zoneIndexOf, zoneOf } from '../data/zones.js';
+import { BOSS_ORDER, BOSSES } from '../data/bosses.js';
 import { DAILY_GOAL, DIFFICULTIES } from '../data/modes.js';
 import { clamp } from '../core/util.js';
 import { hpMul, dmgMul, speedMul } from './stats.js';
-import { spawnEnemy, spawnSwarm } from './enemies.js';
+import { spawnEnemy, spawnSwarm, shoot } from './enemies.js';
 import { spawnBoss, flare } from './bosses.js';
 import { damageEnemy, hitPlayer } from './combat.js';
 import { banner, bolt, emit, ring, sfx, shake } from './fx.js';
@@ -16,17 +16,20 @@ import { banner, bolt, emit, ring, sfx, shake } from './fx.js';
 /** Ajusta todos los multiplicadores de dificultad al sector actual. */
 export function setDifficulty(run) {
   const s = run.sector, f = run.flags;
-  const zone = zoneOf(s);
+  const g = GALAXIES[run.galaxy || 0];
+  const zone = run.mode === 'bossrush' ? ZONES[zoneIndexOf(s)] : zoneOf(s, run.galaxy || 0);
   run.zi = zoneIndexOf(s);
   run.zone = zone;
+  run.tier = run.mode === 'bossrush' ? 0 : g.tier;
   const d = run.diff || DIFFICULTIES.normal;
-  run.hpMul = hpMul(s) * d.hp;
-  run.dmgMul = dmgMul(s) * d.dmg;
+  const gm = run.mode === 'bossrush' ? GALAXIES[0] : g;
+  run.hpMul = hpMul(s) * d.hp * gm.hp;
+  run.dmgMul = dmgMul(s) * d.dmg * gm.dmg;
   run.speedMul = speedMul(s);
   run.ebDmg = 10 * run.dmgMul;
   run.bulletSpeed = (zone.bulletSpeed || 1) * (1 + Math.min(0.5, (s - 1) * 0.012));
   run.fireMul = f.fireRate * d.fire * Math.min(1.4, 1 + (s - 1) * 0.02);
-  run.eliteChance = f.eliteChance + (s >= 6 ? Math.min(0.03, 0.003 * (s - 5)) : 0);
+  run.eliteChance = f.eliteChance + (s >= 6 ? Math.min(0.03, 0.003 * (s - 5)) : 0) + 0.015 * run.tier;
 }
 
 /** Pasa al sector siguiente. */
@@ -55,7 +58,7 @@ export function nextSector(run) {
     sfx(run, 'victory');
     return;
   }
-  if (run.zi !== prevZone) emit(run, 'zone', { zi: run.zi });
+  if (run.zi !== prevZone) emit(run, 'zone', { id: run.zone.id });
   if (isBossSector(run.sector)) {
     banner(run, 'SECTOR ' + run.sector, '¡Alerta! Se acerca ' + bossName(run), 2.6, '#ff5d73');
     sfx(run, 'alarm');
@@ -66,7 +69,7 @@ export function nextSector(run) {
   emit(run, 'sector', { sector: run.sector });
 }
 
-const bossName = run => ({ recolector: 'El Recolector', matriarca: 'la Matriarca Ámbar', coloso: 'el Coloso de Hielo', desguace: 'El Desguace', reina: 'la Reina Coral', gemelas: 'las Bobinas Gemelas', ojo: 'el Ojo del Vacío', forjador: 'El Forjador' })[run.zone.boss];
+const bossName = run => BOSSES[run.zone.boss].name + (GALAXIES[run.galaxy || 0].suffix || '');
 
 /** Elige un tipo de enemigo según los pesos de la zona. */
 function pickType(run) {
@@ -124,10 +127,13 @@ function startEvent(run) {
 
 /** Peligros ambientales de cada zona. */
 function updateHazards(run, dt) {
-  const hz = run.zone.hazard;
   const rng = run.rng, p = run.player;
+  const zh = run.zone.hazard;
+  // Algunas zonas tienen varios peligros: se alterna entre ellos.
+  const hz = Array.isArray(zh) ? zh[(run.hazardN || 0) % zh.length] : zh;
   run.hazardT -= dt;
   if (hz && run.hazardT <= 0 && run.sectorT > 2) {
+    run.hazardN = (run.hazardN || 0) + 1;
     switch (hz) {
       case 'hielo':
         run.hazardT = rng.range(2.2, 3.6);
@@ -177,6 +183,14 @@ function updateHazards(run, dt) {
       ring(run, h.x, h.y, 6, h.r * 1.3, 300, '#9fb4ff', 3);
       shake(run, 5);
       sfx(run, 'thunder');
+    } else if (h.kind === 'obus' && h.t >= h.warn) {
+      // Proyectil de mortero: cae en el círculo y explota en anillo
+      h.dead = true;
+      if ((p.x - h.x) ** 2 + (p.y - h.y) ** 2 < (h.r + p.r * 0.5) ** 2) hitPlayer(run, h.dmg);
+      for (let i = 0; i < 8; i++) shoot(run, h.x, h.y, (i / 8) * Math.PI * 2, 110, { color: '#ffb36b' });
+      ring(run, h.x, h.y, 6, h.r * 1.3, 300, '#ffb36b', 3);
+      shake(run, 4);
+      sfx(run, 'boom');
     } else if (h.kind === 'pozo') {
       h.y += h.vy * dt;
       if (h.y > run.H + h.R) { h.dead = true; continue; }
@@ -198,7 +212,13 @@ export function updateDirector(run, dt) {
   updateHazards(run, dt);
   if (isBossSector(run.sector)) {
     if (!run.bossSpawned && run.sectorT > 1.6) { spawnBoss(run, run.zone.boss); run.bossSpawned = true; }
-    if (run.bossDone) { run.bossDoneT -= dt; if (run.bossDoneT <= 0) nextSector(run); }
+    if (run.bossDone) {
+      run.bossDoneT -= dt;
+      if (run.bossDoneT <= 0) {
+        if (run.sector >= GALAXY_SECTORS && run.mode === 'campaign') galaxyCleared(run);
+        else nextSector(run);
+      }
+    }
     return;
   }
   if (run.sectorT >= SECTOR_SECONDS) { nextSector(run); return; }
@@ -223,6 +243,14 @@ export function updateDirector(run, dt) {
   }
 }
 
+/** Se venció al jefe de la zona 10: la galaxia queda completa y la partida termina con victoria. */
+function galaxyCleared(run) {
+  run.won = true;
+  run.galaxyCleared = true;
+  run.phase = 'over';
+  emit(run, 'over', { won: true, galaxy: run.galaxy });
+}
+
 /* --------------------------- Modo Jefes --------------------------- */
 
 /** Prepara la siguiente pelea del Modo Jefes. */
@@ -234,7 +262,7 @@ function rushSetup(run) {
   run.bossSpawned = false;
   run.bossDone = false;
   banner(run, 'JEFE ' + (i + 1) + ' DE ' + BOSS_ORDER.length, ZONES[i].name, 2.2, '#ff5d73');
-  emit(run, 'zone', { zi: i });
+  emit(run, 'zone', { id: ZONES[i].id });
 }
 
 function updateBossRush(run, dt) {

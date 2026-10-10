@@ -4,9 +4,11 @@
  */
 import { ZONES } from '../data/zones.js';
 
+/** El fondo recibe objetos de zona (con colores a y b). */
+
 export function createBackground() {
   let stars = [];
-  let zone = 0, prev = 0, fade = 1, t = 0, w = 0, h = 0;
+  let zone = ZONES[0], prev = ZONES[0], fade = 1, t = 0, w = 0, h = 0;
 
   function build(W, H) {
     w = W; h = H;
@@ -15,11 +17,10 @@ export function createBackground() {
     for (let i = 0; i < n; i++) stars.push({ x: Math.random() * W, y: Math.random() * H, z: 0.2 + Math.random() * 0.8 });
   }
 
-  function setZone(zi) {
-    zi = ((zi % ZONES.length) + ZONES.length) % ZONES.length;
-    if (zi === zone) return;
+  function setZone(z) {
+    if (!z || z === zone) return;
     prev = zone;
-    zone = zi;
+    zone = z;
     fade = 0;
   }
 
@@ -49,9 +50,9 @@ export function createBackground() {
     ctx.fillRect(0, 0, W, H);
     if (fade < 1) {
       fade = Math.min(1, fade + dt * 0.5);
-      nebula(ctx, ZONES[prev], 1 - fade);
+      nebula(ctx, prev, 1 - fade);
     }
-    nebula(ctx, ZONES[zone], fade);
+    nebula(ctx, zone, fade);
     ctx.fillStyle = '#dfe4ff';
     for (const s of stars) {
       s.y += (20 + s.z * 110) * speed * dt;

@@ -31,7 +31,7 @@ export function spawnEnemy(run, type, x, y, o = {}) {
   const neutral = NEUTRAL.has(type);
   const canElite = !neutral && !o.summon && !NO_ELITE.has(type);
   const elite = canElite && (o.elite ?? rng.chance(run.eliteChance));
-  const sizeMul = (elite ? 1.35 : 1) * (neutral ? 1 : f.enemySize) * (type === 'asteroide' ? rng.range(0.75, 1.4) : 1);
+  const sizeMul = (elite ? 1.35 : 1) * (neutral ? 1 : f.enemySize) * (type === 'asteroide' ? rng.range(0.75, 1.4) : 1) * (o.size || 1);
   const r = d.r * sizeMul;
   const hp = d.hp * run.hpMul * (elite ? 4 : 1) * (neutral ? 1 : f.enemyHp) * (o.hpMul || 1) * (type === 'asteroide' ? sizeMul : 1);
   if (x == null) x = rng.range(r + 20, run.W - r - 20);
@@ -85,6 +85,31 @@ export function spawnEnemy(run, type, x, y, o = {}) {
     case 'enjambre':
       e.cx = x;
       e.cy = y;
+      break;
+    case 'lancero': {
+      // Aparece en un costado, avisa con una línea y cruza la pantalla.
+      const left = rng.chance(0.5);
+      e.dir = left ? 1 : -1;
+      e.x = left ? -e.r : run.W + e.r;
+      e.y = Math.min(run.H * 0.85, Math.max(run.H * 0.35, run.player.y + rng.range(-40, 40)));
+      e.state = 'aim';
+      e.wait = 1.1;
+      addBeam(run, { x: 0, y: e.y, ang: 0, len: run.W, warn: 1.1, active: 0.01, w: e.r * 2, fake: true, color: '#ff4f6d' });
+      break;
+    }
+    case 'fantasma':
+      e.fade = 0;
+      break;
+    case 'divisor':
+      e.gen = o.gen || 0;
+      break;
+    case 'acorazado':
+      e.dmgTaken = 0.55;
+      e.heavy = true;
+      e.spin = 0;
+      break;
+    case 'nodriza':
+      e.heavy = true;
       break;
   }
   if (elite) e.contact *= 1.5;
@@ -258,6 +283,65 @@ export function updateEnemies(run, dt) {
         if (e.fireT <= 0) { e.fireT = 2.4; shoot(run, e.x, e.y, aimAt(run, e.x, e.y), 170, { color: '#b9a0ff' }); }
         if (e.t > 16) e.y += 120 * dt;
         break;
+      case 'lancero':
+        if (e.state === 'aim') {
+          e.wait -= dt;
+          if (e.wait <= 0) { e.state = 'go'; sfx(run, 'missile'); }
+        } else {
+          e.x += e.dir * e.speed * dt;
+          if ((e.dir > 0 && e.x > W + e.r + 5) || (e.dir < 0 && e.x < -e.r - 5)) e.dead = true;
+        }
+        break;
+      case 'nodriza':
+        if (e.t > 16) e.y += e.speed * 1.5 * dt;
+        else if (e.y < e.stopY) e.y += e.speed * dt;
+        else e.x = clamp(e.x + Math.sin(e.t * 0.6 + e.ph) * 30 * dt, e.r, W - e.r);
+        e.fireT -= dt * fire;
+        if (e.fireT <= 0 && e.y > 0) {
+          e.fireT = 3.2;
+          for (const s of [-1, 1]) run.spawn('dron', clamp(e.x + s * 24, 20, W - 20), e.y + 10, { summon: true });
+        }
+        break;
+      case 'fantasma': {
+        // Ciclo: 2,2 s visible y 1,6 s borroso (invulnerable y sin choque).
+        e.y += (e.y < e.stopY + 80 ? e.speed : 12) * dt;
+        e.x = clamp(e.x + Math.sign(p.x - e.x) * 25 * dt, e.r, W - e.r);
+        const c = e.t % 3.8;
+        const wasFaded = e.invuln;
+        e.invuln = c > 2.2;
+        e.fade = e.invuln ? Math.min(1, e.fade + dt * 4) : Math.max(0, e.fade - dt * 4);
+        if (wasFaded && !e.invuln) shoot(run, e.x, e.y, aimAt(run, e.x, e.y), 210, { color: '#d7c9ff' });
+        if (e.t > 18) e.y += 120 * dt;
+        break;
+      }
+      case 'mortero':
+        if (e.t > 15) e.y += e.speed * 1.5 * dt;
+        else if (e.y < e.stopY) e.y += e.speed * dt;
+        else {
+          e.fireT -= dt * fire;
+          if (e.fireT <= 0) {
+            e.fireT = 3;
+            // Marca dónde va a caer el proyectil (cerca de la nave)
+            run.hazards.push({ kind: 'obus', x: clamp(p.x + rng.range(-30, 30), 30, W - 30), y: clamp(p.y + rng.range(-30, 30), H * 0.25, H - 30), r: 42, warn: 1.3, t: 0, dead: false, dmg: 22 * run.dmgMul, from: { x: e.x, y: e.y } });
+            sfx(run, 'mine');
+          }
+        }
+        break;
+      case 'divisor':
+        e.y += e.speed * dt;
+        e.x = clamp(e.bx + Math.sin(e.t * 1.4 + e.ph) * 40, e.r, W - e.r);
+        break;
+      case 'acorazado':
+        if (e.y < e.stopY + 30) e.y += e.speed * dt;
+        else if (e.t > 22) e.y += e.speed * 2 * dt;
+        e.fireT -= dt * fire;
+        if (e.fireT <= 0 && e.y > 0) { e.fireT = 3.4; e.spin = 1.2; }
+        if (e.spin > 0) {
+          e.spin -= dt;
+          e.spinAcc = (e.spinAcc || 0) - dt;
+          if (e.spinAcc <= 0) { e.spinAcc = 0.12; for (let i = 0; i < 4; i++) shoot(run, e.x, e.y, e.t * 2.5 + (i * TAU) / 4, 120, { color: '#8fa7c0' }); }
+        }
+        break;
       case 'clon':
         e.fireT -= dt * fire;
         if (e.fireT <= 0) {
@@ -268,10 +352,11 @@ export function updateEnemies(run, dt) {
     }
     if (e.y > H + 70 || e.x < -90 || e.x > W + 90) { e.dead = true; continue; }
     // Choque con la nave
-    if (e.contact > 0 && run.phase === 'play' && p.inv <= 0) {
+    if (e.contact > 0 && !e.invuln && run.phase === 'play' && p.inv <= 0) {
       const rr = e.r + p.r * 0.75;
       if ((e.x - p.x) ** 2 + (e.y - p.y) ** 2 < rr * rr && hitPlayer(run, e.contact)) {
         if (e.type === 'chispa' || e.type === 'dron' || e.type === 'enjambre' || e.type === 'hielo') damageEnemy(run, e, e.hp + 1, { area: true });
+        else if (e.type === 'lancero') { /* sigue de largo */ }
         else damageEnemy(run, e, e.maxHp * 0.35, { area: true });
       }
     }

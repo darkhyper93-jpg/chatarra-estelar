@@ -82,7 +82,7 @@ export function drawEnemy(ctx, e, px, py) {
     ctx.beginPath(); ctx.arc(0, 0, e.r + 6, 0, TAU); ctx.stroke();
     ctx.globalAlpha = 1;
   }
-  const k = e.r / ({ dron: 13, cazador: 14, chispa: 9, torreta: 17, enjambre: 7, tanque: 24, francotirador: 14, minador: 16, bombardero: 18, escudero: 18, tejedor: 13, sanador: 15, hielo: 14, espora: 14, carguero: 34, capsula: 15, huevo: 12, ojito: 11, clon: 22 }[e.type] || e.r);
+  const k = e.r / ({ dron: 13, cazador: 14, chispa: 9, torreta: 17, enjambre: 7, tanque: 24, francotirador: 14, minador: 16, bombardero: 18, escudero: 18, tejedor: 13, sanador: 15, hielo: 14, espora: 14, carguero: 34, capsula: 15, huevo: 12, ojito: 11, clon: 22, lancero: 14, nodriza: 26, fantasma: 15, mortero: 18, divisor: 20, acorazado: 28 }[e.type] || e.r);
   ctx.scale(k, k);
   ctx.fillStyle = c;
   switch (e.type) {
@@ -198,6 +198,50 @@ export function drawEnemy(ctx, e, px, py) {
       ctx.fillStyle = INK; ctx.beginPath(); ctx.arc(Math.cos(a) * 3, Math.sin(a) * 3, 3.5, 0, TAU); ctx.fill();
       break;
     }
+    case 'lancero':
+      ctx.scale(e.dir || 1, 1);
+      ctx.beginPath(); ctx.moveTo(22, 0); ctx.lineTo(-8, -10); ctx.lineTo(-14, 0); ctx.lineTo(-8, 10); ctx.closePath(); ctx.fill();
+      ctx.fillRect(-22, -2, 14, 4);
+      if (e.state === 'go') { ctx.fillStyle = '#ffd166'; ctx.beginPath(); ctx.moveTo(-14, -5); ctx.lineTo(-30 - Math.random() * 10, 0); ctx.lineTo(-14, 5); ctx.closePath(); ctx.fill(); }
+      break;
+    case 'nodriza':
+      ctx.beginPath(); ctx.ellipse(0, 0, 28, 18, 0, 0, TAU); ctx.fill();
+      ctx.fillStyle = INK; ctx.fillRect(-16, -5, 32, 10);
+      ctx.fillStyle = c;
+      for (let i = 0; i < 4; i++) ctx.fillRect(-14 + i * 8, -3, 4, 6);
+      ctx.beginPath(); ctx.moveTo(-28, 0); ctx.lineTo(-36, -10); ctx.lineTo(-36, 10); ctx.closePath(); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(28, 0); ctx.lineTo(36, -10); ctx.lineTo(36, 10); ctx.closePath(); ctx.fill();
+      break;
+    case 'fantasma': {
+      ctx.globalAlpha = 1 - (e.fade || 0) * 0.75;
+      ctx.beginPath(); ctx.arc(0, -3, 13, Math.PI, 0);
+      for (let i = 0; i <= 4; i++) ctx.lineTo(13 - i * 6.5, 12 + (i % 2 ? -4 : 0) + Math.sin(e.t * 6 + i) * 2);
+      ctx.closePath(); ctx.fill();
+      ctx.fillStyle = INK; ctx.beginPath(); ctx.arc(-5, -4, 3, 0, TAU); ctx.arc(5, -4, 3, 0, TAU); ctx.fill();
+      ctx.globalAlpha = 1;
+      break;
+    }
+    case 'mortero':
+      ctx.save(); ctx.rotate(-Math.PI / 2 + Math.sin(e.t * 2) * 0.2); ctx.fillRect(4, -5, 18, 10); ctx.restore();
+      ctx.beginPath(); ctx.arc(0, 4, 17, 0, Math.PI, true); ctx.closePath(); ctx.fill();
+      ctx.fillRect(-18, 4, 36, 8);
+      ctx.fillStyle = INK; ctx.beginPath(); ctx.arc(0, 2, 6, 0, TAU); ctx.fill();
+      break;
+    case 'divisor':
+      ctx.rotate(e.t * 0.8);
+      poly(ctx, 4, 20, 0); ctx.fill();
+      ctx.strokeStyle = INK; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(-14, 0); ctx.lineTo(14, 0); ctx.moveTo(0, -14); ctx.lineTo(0, 14); ctx.stroke();
+      break;
+    case 'acorazado':
+      poly(ctx, 6, 28, 0); ctx.fill();
+      ctx.fillStyle = INK; poly(ctx, 6, 19, 0); ctx.fill();
+      ctx.fillStyle = c;
+      ctx.save(); ctx.rotate(e.t * 2.5);
+      for (let i = 0; i < 4; i++) { ctx.rotate(TAU / 4); ctx.fillRect(4, -3, 14, 6); }
+      ctx.restore();
+      ctx.beginPath(); ctx.arc(0, 0, 6, 0, TAU); ctx.fill();
+      break;
     case 'clon':
       ctx.globalAlpha = 0.6;
       drawPetals(ctx, 22, e.t, c);
@@ -236,7 +280,24 @@ export function drawBoss(ctx, b, px, py) {
   ctx.save();
   ctx.translate(b.x, b.y);
   if (b.invuln && b.tp) ctx.globalAlpha = Math.abs(Math.cos(b.tp.t * 7)) * 0.7 + 0.1;
+  if (b.tier && !b.part) {
+    // Aura de las versiones Prime (roja) y Omega (celeste)
+    const a0 = ctx.globalAlpha;
+    ctx.strokeStyle = b.tier === 1 ? '#ff5d73' : '#7fe8ff';
+    ctx.lineWidth = 3;
+    ctx.globalAlpha = a0 * (0.45 + Math.sin(b.t * 5) * 0.25);
+    ctx.beginPath(); ctx.arc(0, 0, b.r + 22, 0, TAU); ctx.stroke();
+    ctx.globalAlpha = a0;
+  }
   if (b.part) {
+    if (b.isTurret) {
+      ctx.fillStyle = c;
+      ctx.beginPath(); ctx.arc(0, 0, 15, 0, TAU); ctx.fill();
+      ctx.save(); ctx.rotate(ang); ctx.fillRect(6, -4, 16, 8); ctx.restore();
+      ctx.fillStyle = INK; ctx.beginPath(); ctx.arc(0, 0, 6, 0, TAU); ctx.fill();
+      ctx.restore();
+      return;
+    }
     // Garras del Desguace o la segunda bobina
     if (b.isArm) {
       ctx.rotate(b.side * 0.3);
@@ -309,6 +370,28 @@ export function drawBoss(ctx, b, px, py) {
       const ix = Math.cos(ang) * 16, iy = Math.sin(ang) * 10;
       ctx.fillStyle = b.phase >= 2 ? '#ff5d73' : '#7a5cff'; ctx.beginPath(); ctx.arc(ix, iy, 18, 0, TAU); ctx.fill();
       ctx.fillStyle = INK; ctx.beginPath(); ctx.arc(ix, iy, 8, 0, TAU); ctx.fill();
+      break;
+    }
+    case 'titan': {
+      ctx.fillStyle = c;
+      ctx.beginPath(); ctx.moveTo(-110, 0); ctx.lineTo(-90, -26); ctx.lineTo(90, -26); ctx.lineTo(110, 0); ctx.lineTo(90, 30); ctx.lineTo(-90, 30); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = INK; ctx.fillRect(-84, -16, 168, 14);
+      ctx.fillStyle = b.dmgTaken < 1 ? '#9fb4ff' : '#ff5d73';
+      ctx.beginPath(); ctx.arc(0, -9, 7, 0, TAU); ctx.fill();
+      ctx.fillStyle = '#ffb547';
+      for (const s of [-1, 1]) { ctx.fillRect(s * 104 - 4, -6, 8, 12); }
+      break;
+    }
+    case 'colmena': {
+      ctx.fillStyle = c;
+      poly(ctx, 6, 50, Math.PI / 6); ctx.fill();
+      ctx.fillStyle = INK;
+      for (let i = 0; i < 7; i++) {
+        const a = (i / 6) * TAU, d = i === 6 ? 0 : 24;
+        ctx.save(); ctx.translate(Math.cos(a) * d, Math.sin(a) * d); poly(ctx, 6, 10, Math.PI / 6); ctx.fill(); ctx.restore();
+      }
+      ctx.fillStyle = b.phase ? '#ff5d73' : '#ffb547';
+      ctx.beginPath(); ctx.arc(0, 0, 5 + Math.sin(b.t * 6) * 1.5, 0, TAU); ctx.fill();
       break;
     }
     case 'forjador': {

@@ -17,7 +17,7 @@ export function createHud() {
   };
 
   function loadoutKey(p) {
-    return p.weapons.map(w => w.id + w.lvl + (w.evolved ? 'e' : '')).join() + '|' + Object.entries(p.passives).map(([k, v]) => k + v).join();
+    return p.weapons.map(w => w.id + w.lvl + (w.evolved ? 'e' + (w.over || 0) : '')).join() + '|' + Object.entries(p.passives).map(([k, v]) => k + v).join();
   }
 
   function update(run) {
@@ -30,7 +30,7 @@ export function createHud() {
     setT('lvTxt', 'NV ' + p.level);
     setT('shieldTxt', s.shieldMax ? 'ESCUDO ' + p.shield + '/' + s.shieldMax : '');
     setT('comboTxt', p.combo >= 5 ? 'RACHA ×' + p.combo : '');
-    setT('sectorTxt', run.mode === 'bossrush' ? 'JEFE ' + ((run.rushIndex ?? 0) + 1) + '/8' : 'SECTOR ' + run.sector);
+    setT('sectorTxt', run.mode === 'bossrush' ? 'JEFE ' + ((run.rushIndex ?? 0) + 1) + '/10' : (run.galaxy ? ['', 'II', 'III'][run.galaxy] + ' · ' : '') + 'SECTOR ' + run.sector);
     const prog = run.mode === 'bossrush' || isBossSector(run.sector) ? (run.bossDone ? 1 : run.boss ? 1 - bossHpFrac(run.boss) : 0) : run.sectorT / SECTOR_SECONDS;
     setW('secFill', prog);
     setT('scrapTxt', fmt(run.scrap));
@@ -38,7 +38,7 @@ export function createHud() {
     if (cache.loadout !== key) {
       cache.loadout = key;
       $('loadout').innerHTML =
-        p.weapons.map(w => `<span class="slot${w.evolved ? ' evo' : ''}" title="${w.id}">${icon(w.id, 16)}<em>${w.evolved ? '★' : w.lvl}</em></span>`).join('') +
+        p.weapons.map(w => `<span class="slot${w.evolved ? ' evo' : ''}" title="${w.id}">${icon(w.id, 16)}<em>${w.evolved ? '★' + (w.over ? w.over : '') : w.lvl}</em></span>`).join('') +
         Object.entries(p.passives).map(([id, l]) => `<span class="slot pas">${icon(id, 13)}<em>${l}</em></span>`).join('');
     }
     const b = run.boss;

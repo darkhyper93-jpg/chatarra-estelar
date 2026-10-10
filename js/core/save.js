@@ -17,12 +17,14 @@ export function defaultSave() {
     ships: { gorrion: true },
     ship: 'gorrion',
     best: { sector: 0, score: 0, zone: 0 },
+    galaxies: { cleared: {}, best: {} },
+    shipTree: {},
     bosses: {},
     achievements: {},
     seen: { enemies: {}, bosses: {}, weapons: {}, passives: {} },
     stats: { runs: 0, kills: 0, bossKills: 0, scrapTotal: 0, playTime: 0, evolved: {}, dailyDone: 0, bossRushBest: 0, maxCombo: 0 },
     daily: { date: '', best: 0, done: false, streak: 0, lastDone: '' },
-    settings: { sfx: 0.8, music: 0.5, vibrate: true, shake: true, dmgNumbers: true, sens: 1.3, difficulty: 'normal' },
+    settings: { sfx: 0.8, music: 0.5, vibrate: true, shake: true, dmgNumbers: true, sens: 1.3, difficulty: 'normal', galaxy: 0 },
     tutorial: { move: false, levelup: false, evolve: false },
   };
 }
@@ -51,6 +53,8 @@ export function migrate(raw) {
   s.ships.gorrion = true;
   if (!s.ships[s.ship]) s.ship = 'gorrion';
   s.scrap = Math.max(0, Math.floor(Number(s.scrap) || 0));
+  // Versión 1 del guardado: el récord de sector era de la única galaxia.
+  if (s.best.sector && !s.galaxies.best.cinturon) s.galaxies.best.cinturon = s.best.sector;
   return s;
 }
 

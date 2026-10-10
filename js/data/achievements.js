@@ -6,7 +6,7 @@
 import { BOSS_ORDER, BOSSES } from './bosses.js';
 import { SHIP_IDS, SHIPS } from './ships.js';
 import { WEAPON_IDS } from './weapons.js';
-import { CAMPAIGN_SECTORS } from './zones.js';
+import { TREES, treeLevels, treeMax } from './trees.js';
 
 const sumHangar = save => Object.values(save.hangar || {}).reduce((a, b) => a + b, 0);
 const evolvedCount = save => Object.keys(save.stats.evolved || {}).length;
@@ -25,8 +25,12 @@ export const ACHIEVEMENTS = [
   { id: 'kills1000',    name: 'Exterminador',     desc: 'Destruí 1.000 enemigos en total.',                  reward: 300,  cond: s => s.stats.kills >= 1000 },
   { id: 'kills10000',   name: 'Plaga cero',       desc: 'Destruí 10.000 enemigos en total.',                 reward: 1500, cond: s => s.stats.kills >= 10000 },
   ...bossAchievements,
-  { id: 'campana',      name: 'Campaña completa', desc: 'Vencé a El Forjador. Desbloquea la nave Fénix.',    reward: 2000, cond: s => (s.bosses.forjador || 0) > 0 },
-  { id: 'ciclo',        name: 'Más allá',         desc: 'Llegá al sector ' + (CAMPAIGN_SECTORS + 1) + '.',   reward: 1000, cond: s => s.best.sector > CAMPAIGN_SECTORS },
+  { id: 'campana',      name: 'Cinturón liberado', desc: 'Completá la galaxia 1. Desbloquea la nave Fénix.', reward: 2000, cond: s => !!s.galaxies.cleared.cinturon },
+  { id: 'galaxia2',     name: 'Nebulosa apagada', desc: 'Completá la galaxia 2. Desbloquea la nave Pulsar.', reward: 6000, cond: s => !!s.galaxies.cleared.carmesi },
+  { id: 'galaxia3',     name: 'Más allá del vórtice', desc: 'Completá la galaxia 3. Desbloquea la nave Quimera.', reward: 15000, cond: s => !!s.galaxies.cleared.abisal },
+  { id: 'arbol',        name: 'Maestría',         desc: 'Completá el árbol de mejoras de una nave.',        reward: 3000, cond: s => Object.keys(TREES).some(id => treeLevels(s, id) >= treeMax(id)) },
+  { id: 'sobrecarga',   name: 'Sobrecarga total', desc: 'Llevá la sobrecarga de un arma al máximo en una partida.', reward: 600, cond: (s, r) => !!r && (r.stats.maxOver || 0) >= 5 },
+  { id: 'valiente',     name: 'Sin miedo',        desc: 'Vencé a un jefe en dificultad Difícil o Pesadilla.', reward: 500, cond: (s, r) => !!r && (r.diffId === 'dificil' || r.diffId === 'pesadilla') && r.bossesKilled.length > 0 },
   { id: 'evo1',         name: 'Evolución',        desc: 'Evolucioná un arma.',                               reward: 150,  cond: s => evolvedCount(s) >= 1 },
   { id: 'evo5',         name: 'Coleccionista',    desc: 'Evolucioná 5 armas distintas.',                     reward: 800,  cond: s => evolvedCount(s) >= 5 },
   { id: 'evo10',        name: 'Arsenal legendario', desc: 'Evolucioná las ' + WEAPON_IDS.length + ' armas.', reward: 2500, cond: s => evolvedCount(s) >= WEAPON_IDS.length },
@@ -45,7 +49,7 @@ export const ACHIEVEMENTS = [
   { id: 'diario1',      name: 'Desafío del día',  desc: 'Completá un desafío diario.',                       reward: 150,  cond: s => s.stats.dailyDone >= 1 },
   { id: 'diario3',      name: 'Constante',        desc: 'Completá 3 desafíos diarios. Desbloquea la nave Espectro.', reward: 400, cond: s => s.stats.dailyDone >= 3 },
   { id: 'cazajefes',    name: 'Cazajefes',        desc: 'Vencé 4 jefes seguidos en el Modo Jefes.',          reward: 800,  cond: s => s.stats.bossRushBest >= 4 },
-  { id: 'rey_jefes',    name: 'Rey de los jefes', desc: 'Vencé a los 8 jefes en el Modo Jefes.',             reward: 3000, cond: s => s.stats.bossRushBest >= 8 },
+  { id: 'rey_jefes',    name: 'Rey de los jefes', desc: 'Vencé a los ' + BOSS_ORDER.length + ' jefes en el Modo Jefes.', reward: 3000, cond: s => s.stats.bossRushBest >= BOSS_ORDER.length },
 ];
 
 export const ACH_BY_ID = Object.fromEntries(ACHIEVEMENTS.map(a => [a.id, a]));

@@ -11,9 +11,10 @@ import { ENEMIES } from '../data/enemies.js';
 import { BOSSES, BOSS_ORDER } from '../data/bosses.js';
 import { WEAPON_IDS } from '../data/weapons.js';
 import { PASSIVE_IDS } from '../data/passives.js';
-import { ZONES, CAMPAIGN_SECTORS } from '../data/zones.js';
+import { GALAXIES, GALAXY_SECTORS } from '../data/zones.js';
 import { MODIFIERS, DAILY_GOAL, DAILY_REWARD, DIFFICULTIES, DIFFICULTY_IDS, dailyFor } from '../data/modes.js';
-import { nextCost, bossRushUnlocked, maxZone } from '../game/progress.js';
+import { nextCost, bossRushUnlocked, maxZone, galaxyUnlocked, nextTreeCost } from '../game/progress.js';
+import { TREES } from '../data/trees.js';
 
 /** Frase de "próximo objetivo" para motivar la siguiente partida. */
 export function goalText(save) {
@@ -22,10 +23,15 @@ export function goalText(save) {
   if (aff.length) return `Podés mejorar ${aff[0].name}${aff.length > 1 ? ` y ${aff.length - 1} más` : ''} en el hangar.`;
   const ship = SHIP_IDS.find(id => !save.ships[id] && !SHIPS[id].unlock);
   if (ship && SHIPS[ship].cost - save.scrap < 400) return `Te faltan ${fmt(SHIPS[ship].cost - save.scrap)} kg para la nave ${SHIPS[ship].name}.`;
-  if (save.best.sector < CAMPAIGN_SECTORS) {
-    const nextBoss = Math.floor(save.best.sector / 5);
-    if (nextBoss < BOSS_ORDER.length) return `Próximo jefe: ${BOSSES[BOSS_ORDER[nextBoss]].name}, en el sector ${(nextBoss + 1) * 5}.`;
+  const g = save.settings.galaxy || 0, gal = GALAXIES[g];
+  const best = save.galaxies.best[gal.id] || 0;
+  if (!save.galaxies.cleared[gal.id]) {
+    const nextBoss = Math.min(9, Math.floor(best / 5));
+    const z = gal.zones[nextBoss];
+    return `Próximo jefe: ${BOSSES[z.boss].name}${gal.suffix}, en el sector ${(nextBoss + 1) * 5} de la ${gal.name}.`;
   }
+  const tree = TREES[save.ship].find(nd => { const c = nextTreeCost(save, save.ship, nd.id); return c != null && c <= save.scrap; });
+  if (tree) return `Podés comprar «${tree.name}» en el árbol de tu nave.`;
   const cheap = HANGAR.filter(h => nextCost(save, h.id) != null).sort((a, b) => nextCost(save, a.id) - nextCost(save, b.id))[0];
   return cheap ? `Siguiente mejora: ${cheap.name} · ${fmt(nextCost(save, cheap.id))} kg` : 'Hangar completo. ¡A romper tu récord!';
 }
@@ -33,6 +39,7 @@ export function goalText(save) {
 /** true si hay algo para comprar en el hangar. */
 export function canBuyAnything(save) {
   return HANGAR.some(h => { const c = nextCost(save, h.id); return c != null && c <= save.scrap; }) ||
+    TREES[save.ship].some(nd => { const c = nextTreeCost(save, save.ship, nd.id); return c != null && c <= save.scrap; }) ||
     SHIP_IDS.some(id => !save.ships[id] && !SHIPS[id].unlock && save.scrap >= SHIPS[id].cost);
 }
 
@@ -46,7 +53,11 @@ export function codexPercent(save) {
 /** Dibuja el menú principal con los datos guardados. */
 export function renderMenu(app) {
   const save = app.save;
-  $('mBest').textContent = save.best.sector ? save.best.sector : '—';
+  const g = galaxyUnlocked(save, save.settings.galaxy || 0) ? (save.settings.galaxy || 0) : 0;
+  save.settings.galaxy = g;
+  const gid = GALAXIES[g].id;
+  $('mBestLbl').textContent = 'Récord galaxia ' + (g + 1);
+  $('mBest').textContent = save.galaxies.cleared[gid] ? '✓ ' + GALAXY_SECTORS : (save.galaxies.best[gid] || '—');
   $('mScrap').textContent = fmt(save.scrap) + ' kg';
   $('mShip').textContent = SHIPS[save.ship].name;
   $('mGoal').textContent = goalText(save);
@@ -56,14 +67,34 @@ export function renderMenu(app) {
   $('dailySub').textContent = done ? 'Completado hoy · récord ' + fmt(save.daily.best) : 'Hoy: ' + SHIPS[daily.ship].name + ' · ' + MODIFIERS[daily.mods[0]].name;
   const rush = bossRushUnlocked(save);
   $('rushBtn').disabled = !rush;
-  $('rushSub').textContent = rush ? (save.stats.bossRushBest ? 'Récord: ' + save.stats.bossRushBest + ' de 8 jefes' : '8 jefes seguidos') : 'Vencé a El Desguace para abrirlo';
+  $('rushSub').textContent = rush ? (save.stats.bossRushBest ? 'Récord: ' + save.stats.bossRushBest + ' de ' + BOSS_ORDER.length + ' jefes' : BOSS_ORDER.length + ' jefes seguidos') : 'Vencé a El Desguace para abrirlo';
   $('hangarSub').innerHTML = canBuyAnything(save) ? 'Hay mejoras<span class="dot"></span>' : 'Mejoras';
   const got = Object.keys(save.achievements).length;
   $('achSub').textContent = got + '/' + ACHIEVEMENTS.length;
   $('codexSub').textContent = codexPercent(save) + '%';
   $('installBtn').hidden = !app.canInstall();
   renderDifficulty(app);
+  renderGalaxies(app);
   showScreen('s-menu');
+}
+
+/** Selector de galaxia arriba de "Despegar". */
+function renderGalaxies(app) {
+  const save = app.save, sel = save.settings.galaxy || 0;
+  const row = $('galRow');
+  row.innerHTML = GALAXIES.map((g, i) => {
+    const open = galaxyUnlocked(save, i);
+    const sub = !open ? 'Bloqueada' : save.galaxies.cleared[g.id] ? '✓ Completa' : (save.galaxies.best[g.id] ? 'Sector ' + save.galaxies.best[g.id] : g.name.split(' ').slice(-1)[0]);
+    return `<button role="radio" data-gal="${i}" aria-checked="${sel === i}" ${open ? '' : 'disabled'} title="${esc(g.name)}"><b>${['I', 'II', 'III'][i]}</b><small>${esc(sub)}</small></button>`;
+  }).join('');
+  row.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+    save.settings.galaxy = +b.dataset.gal;
+    app.persist();
+    app.sfx('click');
+    app.onGalaxyChange && app.onGalaxyChange();
+    renderMenu(app);
+    $('mGoal').textContent = GALAXIES[save.settings.galaxy].name + ': ' + GALAXIES[save.settings.galaxy].blurb;
+  }));
 }
 
 /** Selector de dificultad debajo de "Despegar". */
@@ -85,8 +116,10 @@ function renderDifficulty(app) {
 /** Pantalla para elegir desde qué zona despegar (mejora "Mapa estelar"). */
 export function renderZonePick(app) {
   const s = $('s-start');
-  const top = Math.min(maxZone(app.save), ZONES.length - 1);
-  let h = `<p class="eyebrow">Mapa estelar</p><h2>¿Desde dónde despegás?</h2>
+  const g = app.save.settings.galaxy || 0, gal = GALAXIES[g];
+  const ZONES = gal.zones;
+  const top = Math.min(maxZone(app.save, g), ZONES.length - 1);
+  let h = `<p class="eyebrow">Mapa estelar · ${esc(gal.name)}</p><h2>¿Desde dónde despegás?</h2>
     <p class="hint">Si empezás más lejos, arrancás con mejoras gratis para estar a la altura.</p><div class="list">`;
   for (let z = 0; z <= top; z++) {
     h += `<button class="row" data-zone="${z}"><div class="info"><h3><span class="swatch" style="background:${ZONES[z].accent}"></span>Zona ${z + 1}: ${esc(ZONES[z].name)}</h3>
@@ -94,7 +127,7 @@ export function renderZonePick(app) {
   }
   h += `</div><button class="btn" id="zBack">Volver</button>`;
   s.innerHTML = h;
-  s.querySelectorAll('[data-zone]').forEach(b => b.addEventListener('click', () => app.startRun({ mode: 'campaign', startZone: +b.dataset.zone })));
+  s.querySelectorAll('[data-zone]').forEach(b => b.addEventListener('click', () => app.startRun({ mode: 'campaign', startZone: +b.dataset.zone, galaxy: g })));
   $('zBack').onclick = () => { app.sfx('click'); renderMenu(app); };
   showScreen('s-start');
 }
@@ -126,10 +159,10 @@ export function renderDaily(app) {
 export function renderBossRush(app) {
   const save = app.save;
   const s = $('s-start');
-  s.innerHTML = `<p class="eyebrow">Modo Jefes</p><h2>Ocho jefes, uno atrás del otro</h2>
+  s.innerHTML = `<p class="eyebrow">Modo Jefes</p><h2>Diez jefes, uno atrás del otro</h2>
     <p class="hint">Empezás con 10 mejoras gratis y ganás 3 más después de cada jefe. Se repara la mitad del casco entre peleas.</p>
     <div class="list">${BOSS_ORDER.map((id, i) => `<div class="row"><div class="info"><h3>${i + 1}. ${esc(BOSSES[id].name)}</h3><p>${esc(BOSSES[id].desc)}</p></div></div>`).join('')}</div>
-    <p class="goal">Tu récord: ${save.stats.bossRushBest || 0} de 8</p>
+    <p class="goal">Tu récord: ${save.stats.bossRushBest || 0} de ${BOSS_ORDER.length}</p>
     <button class="btn primary" id="rGo">Empezar</button>
     <button class="btn" id="rBack">Volver</button>`;
   $('rGo').onclick = () => app.startRun({ mode: 'bossrush' });

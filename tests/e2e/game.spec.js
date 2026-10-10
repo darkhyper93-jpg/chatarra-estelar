@@ -91,9 +91,10 @@ test('se juega: mejora, pausa, muerte, resumen y hangar', async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
-test('los ocho jefes aparecen y se dibujan sin errores', async ({ page }) => {
+test('los diez jefes aparecen y se dibujan sin errores', async ({ page }) => {
+  test.setTimeout(150_000);
   const errors = watchErrors(page);
-  for (let i = 1; i <= 8; i++) {
+  for (let i = 1; i <= 10; i++) {
     await page.evaluate(s => {
       __ce.startRun({ mode: 'campaign', startZone: 0, debugSector: s, god: true, seed: s });
       window.__auto = setInterval(() => { const c = document.querySelector('#s-levelup:not([hidden]) .card'); if (c) c.click(); }, 30);
@@ -149,5 +150,40 @@ test('logros, códice, desafío diario y modo jefes', async ({ page }) => {
   await page.click('#rGo');
   await expect(page.locator('#s-levelup')).toBeVisible();
   expect(await page.evaluate(() => __ce.run.mode)).toBe('bossrush');
+  expect(errors).toEqual([]);
+});
+
+test('galaxias y árbol de la nave', async ({ page }) => {
+  const errors = watchErrors(page);
+  // Al principio sólo se puede jugar la galaxia 1
+  await expect(page.locator('#galRow [data-gal="1"]')).toBeDisabled();
+  await page.evaluate(() => { const s = __ce.app.save; s.galaxies.cleared.cinturon = 1; s.scrap = 100000; __ce.app.persist(); __ce.toMenu(); });
+  await expect(page.locator('#galRow [data-gal="1"]')).toBeEnabled();
+  await page.click('#galRow [data-gal="1"]');
+  await page.click('#playBtn');
+  await expect(page.locator('#hud')).toBeVisible();
+  expect(await page.evaluate(() => __ce.run.galaxy)).toBe(1);
+  await expect(page.locator('#sectorTxt')).toContainText('II');
+  await page.evaluate(() => __ce.toMenu());
+  // Árbol de la nave en el hangar
+  await page.click('#hangarBtn');
+  await page.click('#s-hangar [data-tab="tree"]');
+  await expect(page.locator('#s-hangar')).toContainText('Escalón 4');
+  await page.locator('[data-node="g_canon"]').click();
+  expect(await page.evaluate(() => __ce.app.save.shipTree.gorrion.g_canon)).toBe(1);
+  expect(errors).toEqual([]);
+});
+
+test('los enemigos nuevos de las galaxias 2 y 3 se dibujan sin errores', async ({ page }) => {
+  const errors = watchErrors(page);
+  for (const [g, s] of [[1, 18], [2, 18]]) {
+    await page.evaluate(([g, s]) => {
+      __ce.startRun({ mode: 'campaign', galaxy: g, debugSector: s, god: true, seed: s });
+      window.__auto = setInterval(() => { const c = document.querySelector('#s-levelup:not([hidden]) .card'); if (c) c.click(); }, 30);
+      for (const t of ['lancero', 'nodriza', 'fantasma', 'mortero', 'divisor', 'acorazado']) __ce.run.spawn(t, 200, 120);
+    }, [g, s]);
+    await page.waitForTimeout(4000);
+    await page.evaluate(() => { clearInterval(window.__auto); __ce.toMenu(); });
+  }
   expect(errors).toEqual([]);
 });

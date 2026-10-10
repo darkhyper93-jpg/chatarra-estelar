@@ -7,7 +7,7 @@ import { loadSave, writeSave, migrate } from './core/save.js';
 import { createAudio } from './core/audio.js';
 import { todayKey } from './core/rng.js';
 import { clamp, fmt, esc } from './core/util.js';
-import { ZONES, zoneIndexOf } from './data/zones.js';
+import { GALAXIES, ZONE_BY_ID, zoneOf } from './data/zones.js';
 import { SHIPS } from './data/ships.js';
 import { dailyFor } from './data/modes.js';
 import { createRun, step, drainEvents, needsChoice, STEP, WORLD_W } from './game/run.js';
@@ -62,6 +62,12 @@ const app = {
   announceAchievement(a) {
     toast(`${icon('trophy', 20)}<span>${esc(a.name)}</span><small>+${fmt(a.reward)} kg</small>`);
     audio.play('achievement');
+  },
+  onGalaxyChange() {
+    const g = app.save.settings.galaxy || 0;
+    const z = zoneOf(Math.max(1, app.save.galaxies.best[GALAXIES[g].id] || 1), g);
+    bg.setZone(z);
+    musicFor(z, false);
   },
   replaceSave(data) {
     app.save = migrate(data);
@@ -164,8 +170,8 @@ function feedInput() {
 
 /* ------------------------------ música ------------------------------ */
 
-function musicFor(zi, boss) {
-  audio.setMusic(ZONES[((zi % ZONES.length) + ZONES.length) % ZONES.length].music, boss);
+function musicFor(zone, boss) {
+  if (zone) audio.setMusic(zone.music, boss);
 }
 
 /* ------------------------------ partidas ------------------------------ */
@@ -173,7 +179,7 @@ function musicFor(zi, boss) {
 function startRun(opts) {
   audio.unlock();
   const mode = opts.mode || 'campaign';
-  if (mode === 'campaign' && opts.startZone == null && (app.save.hangar.atajo || 0) > 0 && maxZone(app.save) > 0 && !opts.direct) {
+  if (mode === 'campaign' && opts.startZone == null && (app.save.hangar.atajo || 0) > 0 && maxZone(app.save, app.save.settings.galaxy || 0) > 0 && !opts.direct) {
     state = 'screen';
     renderZonePick(app);
     return;
@@ -183,6 +189,7 @@ function startRun(opts) {
   run = createRun({
     save: app.save,
     mode,
+    galaxy: opts.galaxy ?? app.save.settings.galaxy ?? 0,
     difficulty: app.save.settings.difficulty,
     startZone: opts.startZone || 0,
     daily: mode === 'daily' ? dailyFor(todayKey()) : null,
@@ -197,8 +204,8 @@ function startRun(opts) {
   hideScreens();
   $('hud').hidden = false;
   $('tutorial').hidden = app.save.tutorial.move;
-  bg.setZone(run.zi);
-  musicFor(run.zi, false);
+  bg.setZone(run.zone);
+  musicFor(run.zone, false);
   audio.duck(false);
   state = 'play';
   achT = 0;
@@ -253,7 +260,8 @@ function toMenu() {
   run = null;
   $('hud').hidden = true;
   $('tutorial').hidden = true;
-  bg.setZone(Math.min(ZONES.length - 1, zoneIndexOf(Math.max(1, app.save.best.sector))));
+  const g = app.save.settings.galaxy || 0;
+  bg.setZone(zoneOf(Math.max(1, app.save.galaxies.best[GALAXIES[g].id] || 1), g));
   musicFor(bg.zone, false);
   audio.duck(true);
   renderMenu(app);
@@ -277,9 +285,9 @@ function handleEvents() {
     switch (ev.t) {
       case 'sfx': audio.play(ev.n, ev.x); break;
       case 'vibrate': app.vibrate(ev.ms); break;
-      case 'boss': musicFor(run.zi, true); break;
-      case 'bossDown': musicFor(run.zi, false); break;
-      case 'zone': bg.setZone(ev.zi); musicFor(ev.zi, false); break;
+      case 'boss': musicFor(run.zone, true); break;
+      case 'bossDown': musicFor(run.zone, false); break;
+      case 'zone': bg.setZone(ZONE_BY_ID[ev.id]); musicFor(ZONE_BY_ID[ev.id], false); break;
       case 'evolve':
         if (!app.save.tutorial.evolve) { app.save.tutorial.evolve = true; app.persist(); }
         break;
