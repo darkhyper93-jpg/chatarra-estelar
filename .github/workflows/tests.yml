@@ -1,9 +1,17 @@
-name: Pruebas
+name: Pruebas y publicación
+
+# Corre todas las pruebas. Si pasan y el cambio está en main, publica el
+# juego en GitHub Pages. Si alguna falla, no se publica nada y la página
+# sigue con la última versión buena.
 
 on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   pruebas:
@@ -24,3 +32,31 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: Pruebas en navegador (celular)
         run: npm run test:e2e
+
+  publicar:
+    needs: pruebas
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Armar la carpeta del sitio
+        run: node scripts/build-site.js
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deploy
+        uses: actions/deploy-pages@v4
