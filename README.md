@@ -138,7 +138,7 @@ npm run test:e2e     # pruebas en un navegador con tamaño de celular (Playwrigh
 
 - **Pruebas de lógica:** guardado, código de progreso (incluso con valores rotos), mejoras, evoluciones, hangar, logros, desafío diario, y que el service worker esté al día con los archivos del juego.
 - **Simulaciones:** un piloto automático juega partidas completas. Hay dos estrategias: una que elige mejoras casi al azar y otra «inteligente» que va directo a las evoluciones, junta los cristales y le apunta al jefe. Se verifica que cada jefe se pueda vencer en un tiempo razonable, que las primeras galaxias y el Modo Jefes se puedan terminar sin errores, que los jefes finales de las 10 galaxias funcionen, que la partida sea repetible con la misma semilla y que el balance esté en un rango sano.
-- **Pruebas en navegador:** se juega como una persona en pantallas de Android y iPhone: moverse, subir de nivel, pausar, morir, comprar en el hangar, recargar la página, ajustes, los 10 jefes, las 10 galaxias, que funcione sin internet y que una versión nueva reemplace a la vieja sin perder el progreso.
+- **Pruebas en navegador:** se juega como una persona en pantallas de Android y iPhone, con el motor de Chrome y (en GitHub) con el de Safari: moverse, subir de nivel, pausar, morir, comprar en el hangar, recargar la página, ajustes, los 10 jefes, las 10 galaxias, que funcione sin internet y que una versión nueva reemplace a la vieja sin perder el progreso.
 
 Las pruebas corren solas en GitHub cada vez que se sube un cambio (pestaña **Actions**). **Sólo si pasan todas, GitHub Actions publica el juego** en GitHub Pages (`scripts/build-site.js` arma la carpeta con los archivos del juego). Si alguna falla, la página sigue con la última versión buena.
 
