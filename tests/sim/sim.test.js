@@ -30,6 +30,7 @@ test('cada jefe se puede vencer en un tiempo razonable', () => {
   BOSS_ORDER.forEach((id, i) => {
     const sector = (i + 1) * 5;
     const run = createRun({ save, seed: 11 + i, H: 760, noFx: true, god: true, debugSector: sector });
+    run.smartBot = true; // elige como alguien que conoce el juego; el otro piloto varía demasiado
     let start = null, secs = null;
     playRun(run, 400, r => {
       healthy(r);

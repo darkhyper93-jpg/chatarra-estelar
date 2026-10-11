@@ -207,6 +207,8 @@ h2 { font-size: 28px; line-height: 1.05; }
 .row p { margin: 0; font-size: 13px; color: var(--muted); line-height: 1.35; }
 .row .info { display: grid; gap: 4px; min-width: 0; }
 .row .trait { color: var(--mint); }
+.row .ability { color: var(--text); }
+.row .ability b { color: var(--amber); font-weight: 600; }
 .buy { min-width: 96px; padding: 10px 12px; border-radius: 7px; border: 1.5px solid var(--amber); background: transparent; color: var(--amber); font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; }
 .buy.can { background: var(--amber); color: #2b1700; }
 .buy:disabled { border-color: var(--line); color: var(--muted); background: transparent; cursor: default; }

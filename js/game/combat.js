@@ -6,6 +6,7 @@ import { ENEMIES, NEUTRAL } from '../data/enemies.js';
 import { clamp, segDist2, TAU } from '../core/util.js';
 import { burst, emit, explode, ring, sfx, text, shake, banner } from './fx.js';
 import { xpMul } from './stats.js';
+import { beforeHit, afterHit, damageMul, onKill } from './abilities.js';
 
 /* ------------------------------------------------------------------ */
 /* Daño a enemigos                                                     */
@@ -26,7 +27,7 @@ export function damageEnemy(run, e, dmg, o = {}) {
   if (e.dead || e.invuln) return 0;
   const crit = o.crit || 1;
   const ps = run.player.stats;
-  let d = dmg * crit * (e.dmgTaken ?? 1);
+  let d = dmg * crit * (e.dmgTaken ?? 1) * damageMul(run, e);
   // Efectos de los árboles de nave
   if (e.isBoss && ps.bossDmg) d *= 1 + ps.bossDmg;
   if (ps.lowHpMight && run.player.hp < ps.maxHp * 0.4) d *= 1 + ps.lowHpMight;
@@ -75,6 +76,7 @@ export function killEnemy(run, e) {
     p.combo++;
     p.comboT = 2.5;
     if (p.stats.killHeal) p.hp = Math.min(p.stats.maxHp, p.hp + p.stats.killHeal);
+    onKill(run, e);
     if (p.combo > run.stats.maxCombo) run.stats.maxCombo = p.combo;
   }
   const luck = p.stats.luck;
@@ -129,6 +131,9 @@ export function killEnemy(run, e) {
 export function hitPlayer(run, dmg) {
   const p = run.player;
   if (p.inv > 0 || run.phase !== 'play') return false;
+  // Habilidad de la nave: esquivar (Halcón), fase (Espectro), caparazón (Tortuga).
+  dmg = beforeHit(run, dmg);
+  if (dmg <= 0) return true;
   if (p.shield > 0) {
     p.shield--;
     p.shieldT = 0;
@@ -143,6 +148,7 @@ export function hitPlayer(run, dmg) {
   if (p.stats.hurtNova) {
     run.novas.push({ x: p.x, y: p.y, r: 10, R: 90 + 30 * p.stats.hurtNova, speed: 520, dmg: 25 * p.stats.hurtNova * run.hpMul, hit: new Set(), dead: false, evo: false });
   }
+  afterHit(run);
   run.stats.hitThisSector = true;
   run.stats.hitThisBoss = true;
   run.hurt = 0.35;

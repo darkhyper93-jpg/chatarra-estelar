@@ -39,7 +39,22 @@ Queda un ícono como cualquier otra app; se abre en pantalla completa.
 ### Entre partidas
 
 - **Hangar general:** 20 mejoras permanentes en 4 grupos (ataque, defensa, utilidad y táctica). Cada galaxia completada sube el máximo de varias de ellas. Se pueden devolver las mejoras para probar otra combinación.
-- **12 naves**, cada una con su arma inicial y un rasgo propio.
+- **12 naves**, cada una con su arma inicial, un rasgo y una **habilidad única** que cambia cómo se juega. Las más difíciles de conseguir tienen habilidades más fuertes:
+
+| Nave | Cómo se consigue | Habilidad |
+|---|---|---|
+| Gorrión | Gratis | **Versátil**: 4 cartas al subir de nivel |
+| Halcón | 800 kg | **Reflejos**: esquiva sola un golpe cada 8 s |
+| Tortuga | 1.400 kg | **Caparazón**: quieta, recibe la mitad de daño y carga el escudo el doble de rápido |
+| Avispa | 2.200 kg | **Aguijón**: lo que tocan sus misiles recibe +30% de daño 4 s |
+| Mantis | 3.200 kg | **Voraz**: cada enemigo destruido cerca repara un 3% del casco |
+| Libélula | 4.200 kg | **Corriente**: moviéndose, todas las armas disparan 40% más rápido |
+| Minero | 5.500 kg | **Avaricia**: +1% de daño cada 100 kg juntados en la partida (hasta +50%) |
+| Centinela | 7.000 kg | **Escolta**: los drones destruyen balas enemigas |
+| Espectro | 3 desafíos diarios | **Fase**: con poco casco, intangible 4 s |
+| Fénix | Galaxia 1 | **Renacer**: revive con todo el casco y una ola de fuego |
+| Pulsar | Galaxia 2 | **Sobrecarga**: cada 8 s, un Pulso nova gigante |
+| Quimera | Galaxia 3 | **Hidra**: 5 armas y 6 pasivas; sus 2 armas extra empiezan en nivel 3 |
 - **Árbol de cada nave:** 8 mejoras exclusivas por nave (96 en total) en 4 escalones que se abren a medida que comprás. Sólo funcionan con esa nave. En el último escalón están las más fuertes, como evolucionar el arma sin necesitar la pasiva.
 - **Logros:** 47 logros que dan chatarra. Cuatro naves se desbloquean con logros (completar galaxias o desafíos diarios).
 - **Desafío diario:** todos juegan el mismo día con la misma nave, los mismos dos modificadores y **el mismo hangar estándar** (las mejoras propias y el árbol no cuentan): gana el que mejor juega. Ideal para competir con amigos.
@@ -112,7 +127,7 @@ css/style.css         estilos
 js/main.js            arranque, bucle principal, toques y teclado
 js/core/              azar con semilla, guardado, sonido, utilidades
 js/data/              datos del juego: armas, enemigos, jefes, zonas, naves, logros...
-js/game/              simulación: partida, armas, enemigos, jefes, combate, progreso
+js/game/              simulación: partida, armas, enemigos, jefes, combate, habilidades de naves, progreso
 js/render/            dibujo en el canvas
 js/ui/                pantallas: menú, hangar, logros, códice, ajustes, HUD
 sw.js                 service worker (funcionar sin internet)

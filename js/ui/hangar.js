@@ -56,7 +56,7 @@ export function renderHangar(app) {
       const lock = !own && sh.unlock ? `<p>Se desbloquea con el logro «${esc(ACH_BY_ID[sh.unlock].name)}».</p>` : '';
       h += `<div class="row${sel ? ' sel' : ''}${!own && sh.unlock ? ' locked' : ''}"><div class="info">
         <h3><canvas class="shipprev" data-ship="${id}" width="64" height="64" style="width:32px;height:32px"></canvas>${esc(sh.name)}</h3>
-        <p>${esc(sh.desc)}</p><p class="trait">${esc(sh.trait)} Arma inicial: ${esc(WEAPONS[sh.weapon].name)}.</p>${lock}
+        <p>${esc(sh.desc)}</p><p class="ability"><b>${esc(sh.ability.name)}:</b> ${esc(sh.ability.desc)}</p><p class="trait">${esc(sh.trait)} Arma inicial: ${esc(WEAPONS[sh.weapon].name)}.</p>${lock}
         ${own ? `<p>Árbol: ${treeLevels(save, id)}/${treeMax(id)} niveles</p>` : ''}
         <div class="shipstats">${statBar('Casco', sh.hp / 160)}${statBar('Velocidad', sh.speed / 1.25)}</div></div>${btn}</div>`;
     }

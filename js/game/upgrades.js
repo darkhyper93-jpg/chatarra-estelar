@@ -62,7 +62,7 @@ export function candidatePool(run) {
     const l = p.passives[id] || 0;
     const bonus = evoKeys.has(id) ? 1.7 : 1;
     if (l > 0 && l < PASSIVES[id].max) pool.push({ kind: 'passive', id, w: 1.05 * bonus });
-    else if (l === 0 && nPass < PASSIVE_SLOTS) pool.push({ kind: 'passive', id, w: 0.8 * bonus });
+    else if (l === 0 && nPass < (p.stats.passiveSlots || PASSIVE_SLOTS)) pool.push({ kind: 'passive', id, w: 0.8 * bonus });
   }
   return pool.filter(c => !run.banished.has(keyOf(c)));
 }
@@ -71,7 +71,7 @@ export function candidatePool(run) {
 export function rollChoices(run, opts = {}) {
   const rng = run.rng, p = run.player;
   const pool = candidatePool(run);
-  const n = p.stats.luck >= 0.3 ? 4 : 3;
+  const n = Math.min(4, 3 + (p.stats.cards || 0) + (p.stats.luck >= 0.3 ? 1 : 0));
   const out = [];
   if (opts.chest) {
     const evo = pool.find(c => c.kind === 'evo');

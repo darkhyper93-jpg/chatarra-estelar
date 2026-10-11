@@ -6,7 +6,7 @@
 import { SHIPS } from '../data/ships.js';
 import { HANGAR } from '../data/hangar.js';
 import { TREES } from '../data/trees.js';
-import { PASSIVES } from '../data/passives.js';
+import { PASSIVES, PASSIVE_SLOTS } from '../data/passives.js';
 import { MODIFIERS } from '../data/modes.js';
 import { weaponStats } from '../data/weapons.js';
 import { GALAXY_POWER } from '../data/zones.js';
@@ -18,6 +18,7 @@ export function baseStats(shipId, hangar = {}, mods = [], tree = {}) {
     maxHp: ship.hp, speed: ship.speed, might: 1, haste: 1, area: 1, projSpeed: 1, duration: 1,
     amount: 0, crit: 0.05, critMult: 2.5, armor: 0, regen: 0, magnet: 72, luck: 0, xpMul: 1,
     scrapMul: 1, shieldMax: 0, revives: 0, rerolls: 1, banishes: 0, slots: 4, startLevels: 0,
+    cards: 0, passiveSlots: PASSIVE_SLOTS, extraWeaponLvl: 0,
     // Efectos especiales (árboles de nave)
     bossDmg: 0, killHeal: 0, lowHpMight: 0, comboMight: 0, hurtNova: 0, shieldRate: 1, invBonus: 0,
     sigLevel: 0, extraWeapons: 0, weaponMods: {}, evoFree: {}, evoFreeAll: false,

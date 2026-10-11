@@ -153,6 +153,12 @@ export function drawRun(ctx, run, opts = {}) {
   for (const e of run.enemies) {
     if (e.isBoss) drawBoss(ctx, e, p.x, p.y);
     else drawEnemy(ctx, e, p.x, p.y);
+    // Marca del Aguijón (Avispa): +30% de daño mientras dura
+    if (e.mark > run.time && !e.dead) {
+      ctx.strokeStyle = 'rgba(185,160,255,.85)';
+      ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(e.x, e.y, e.r + 6, 0, TAU); ctx.stroke();
+    }
   }
 
   // Láser del jugador
@@ -216,7 +222,11 @@ export function drawRun(ctx, run, opts = {}) {
         }
       }
     }
-    if (!(p.inv > 0 && Math.floor(t * 18) % 2)) drawShip(ctx, p.x, p.y, p.tilt, p.color, p.shipId);
+    const ab = run.abil || {};
+    if (ab.id === 'fase' && ab.phase > 0) ctx.globalAlpha = 0.35; // Espectro intangible
+    if (!(p.inv > 0 && ab.phase <= 0 && Math.floor(t * 18) % 2)) drawShip(ctx, p.x, p.y, p.tilt, p.color, p.shipId);
+    ctx.globalAlpha = 1;
+    drawAbility(ctx, run, p, t);
     if (p.shield > 0) {
       ctx.strokeStyle = 'rgba(127,232,255,.75)';
       ctx.lineWidth = 1.5 + p.shield;
@@ -262,8 +272,8 @@ export function drawRun(ctx, run, opts = {}) {
   ctx.globalCompositeOperation = 'lighter';
   for (const n of run.novas) {
     ctx.globalAlpha = Math.max(0, 1 - n.r / n.R) * 0.9;
-    ctx.strokeStyle = n.evo ? '#ffd166' : '#7fe8ff';
-    ctx.lineWidth = 5;
+    ctx.strokeStyle = n.fire ? '#ff7a3d' : n.evo ? '#ffd166' : '#7fe8ff';
+    ctx.lineWidth = n.fire ? 12 : 5;
     ctx.beginPath(); ctx.arc(n.x, n.y, n.r, 0, TAU); ctx.stroke();
   }
   for (const r of run.fx.rings) {
@@ -335,3 +345,35 @@ export function drawRun(ctx, run, opts = {}) {
     ctx.strokeRect(3, 3, W - 6, H - 6);
   }
 }
+
+/** Señales de la habilidad de la nave alrededor de ella. */
+function drawAbility(ctx, run, p, t) {
+  const ab = run.abil;
+  if (!ab || !ab.id) return;
+  ctx.save();
+  if (ab.id === 'reflejos' && ab.cd <= 0) {
+    // Halcón: esquiva lista
+    ctx.strokeStyle = 'rgba(143,240,164,.6)';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([4, 5]);
+    ctx.beginPath(); ctx.arc(p.x, p.y, 27, t * 2, t * 2 + TAU); ctx.stroke();
+  } else if (ab.id === 'caparazon' && ab.still >= 0.5) {
+    // Tortuga: caparazón activo
+    ctx.strokeStyle = 'rgba(255,181,71,.8)';
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    for (let i = 0; i <= 6; i++) { const a = (i / 6) * TAU + Math.PI / 6; ctx.lineTo(p.x + Math.cos(a) * 25, p.y + Math.sin(a) * 25); }
+    ctx.stroke();
+  } else if (ab.id === 'sobrecarga' && ab.charge >= 8) {
+    // Pulsar: onda gigante cargada
+    ctx.strokeStyle = `rgba(233,240,255,${0.45 + 0.35 * Math.sin(t * 8)})`;
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(p.x, p.y, 30 + 2 * Math.sin(t * 8), 0, TAU); ctx.stroke();
+  } else if (ab.id === 'corriente' && ab.moving > 0) {
+    // Libélula: estela mientras dispara más rápido
+    ctx.fillStyle = 'rgba(94,230,192,.35)';
+    ctx.beginPath(); ctx.ellipse(p.x, p.y + 20, 6, 14, 0, 0, TAU); ctx.fill();
+  }
+  ctx.restore();
+}
+

@@ -6,6 +6,7 @@
 import { TAU, clamp, wrapAngle } from '../core/util.js';
 import { critRoll, damageEnemy, explodeAt } from './combat.js';
 import { bolt, sfx } from './fx.js';
+import { novaBoost, onMissileBlast } from './abilities.js';
 
 /** Enemigo vivo más cercano a (x, y) dentro de `maxD` (o null). */
 export function nearestEnemy(run, x, y, maxD = 1e9, skip) {
@@ -170,7 +171,8 @@ const H = {
     w.t -= dt;
     if (w.t > 0) return;
     w.t = s.cd;
-    run.novas.push({ x: p.x, y: p.y, r: 10, R: s.radius * s.area, speed: 520, dmg: s.dmg, hit: new Set(), dead: false, evo: w.evolved });
+    const boost = novaBoost(run); // Pulsar: onda gigante cada 8 segundos
+    run.novas.push({ x: p.x, y: p.y, r: 10, R: s.radius * s.area * (boost ? boost.r : 1), speed: boost ? 640 : 520, dmg: s.dmg * (boost ? boost.dmg : 1), hit: new Set(), dead: false, evo: w.evolved || !!boost });
     if (w.evolved && p.shield < p.stats.shieldMax) p.shield++;
     sfx(run, 'nova');
   },
@@ -233,6 +235,7 @@ export function updateProjectiles(run, dt) {
       const rr = e.r + 6;
       if ((e.x - m.x) ** 2 + (e.y - m.y) ** 2 < rr * rr) {
         m.dead = true;
+        onMissileBlast(run, m.x, m.y, m.radius); // Avispa: marca antes de la explosión
         explodeAt(run, m.x, m.y, m.radius, m.dmg, '#b9a0ff', critRoll(run));
         break;
       }

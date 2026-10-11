@@ -16,6 +16,7 @@ import { updateBoss } from './bosses.js';
 import { updateWeapons, updateProjectiles } from './weapons.js';
 import { updatePlayerBullets, updateEnemyBullets, updateBeams, updatePickups } from './combat.js';
 import { banner, burst, emit, explode, sfx, shake, updateFx } from './fx.js';
+import { initAbility, updateAbility, fireRateMul, onRevive } from './abilities.js';
 
 export const WORLD_W = 400;
 export const STEP = 1 / 60;
@@ -90,6 +91,7 @@ export function createRun(opts) {
   p.hp = p.stats.maxHp;
   p.shield = p.stats.shieldMax;
   p.revives = p.stats.revives;
+  initAbility(run);
   run.rerolls = p.stats.rerolls;
   run.banishes = p.stats.banishes;
   run.seen.weapons[ship.weapon] = true;
@@ -100,7 +102,7 @@ export function createRun(opts) {
   for (let i = 0; i < run.flags.extraWeapons + p.stats.extraWeapons; i++) {
     const free = WEAPON_IDS.filter(id => !p.weapons.some(w => w.id === id));
     const id = run.rng.pick(free);
-    p.weapons.push({ id, lvl: 1, evolved: false, t: 0.3, on: 0 });
+    p.weapons.push({ id, lvl: 1 + Math.min(2, p.stats.extraWeaponLvl || 0), evolved: false, t: 0.3, on: 0 });
     run.seen.weapons[id] = true;
   }
   recomputeStats(run);
@@ -159,6 +161,7 @@ function playerDown(run) {
   const p = run.player;
   if (p.revives > 0) {
     p.revives--;
+    if (onRevive(run)) return; // Fénix: renace con todo
     p.hp = p.stats.maxHp * 0.5;
     p.inv = 2.5;
     run.eb.length = 0;
@@ -207,11 +210,12 @@ export function step(run, dt = STEP) {
   run.timers = run.timers.filter(t => !t.done);
 
   updatePlayer(run, dt);
+  updateAbility(run, dt);
   updateDirector(run, dt);
   if (run.phase === 'over') return;
   updateEnemies(run, dt);
   updateBoss(run, dt);
-  updateWeapons(run, dt);
+  updateWeapons(run, dt * fireRateMul(run));
   updateProjectiles(run, dt);
   updatePlayerBullets(run, dt);
   updateEnemyBullets(run, dt);
