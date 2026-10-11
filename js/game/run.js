@@ -21,6 +21,15 @@ export const WORLD_W = 400;
 export const STEP = 1 / 60;
 
 /**
+ * Lo que recibís al despegar desde una zona avanzada (Mapa estelar): lo mismo
+ * que tendría alguien que llegó jugando. Medido con el piloto automático:
+ * unos 6 niveles por zona y un cofre por cada jefe salteado.
+ */
+export function zoneHeadStart(zone) {
+  return { levels: 6 * zone, chests: zone };
+}
+
+/**
  * Crea una partida nueva.
  * opts: { save, mode: 'campaign' | 'daily' | 'bossrush', startZone, seed, H, daily, noFx }
  */
@@ -90,7 +99,13 @@ export function createRun(opts) {
   }
   recomputeStats(run);
 
-  run.pendingLevels = p.stats.startLevels + startZone * 4 + (mode === 'bossrush' ? 10 : 0);
+  const head = zoneHeadStart(startZone);
+  run.pendingLevels = p.stats.startLevels + head.levels + (mode === 'bossrush' ? 10 : 0);
+  run.pendingChests = head.chests;
+  // El nivel también avanza, para que la experiencia siga al ritmo de esa zona.
+  p.level = 1 + head.levels;
+  p.next = xpNeed(p.level);
+  run.startLevel = p.level;
   if (opts.debugSector) {
     // Sólo para pruebas: empezar directo en un sector con mejoras acordes.
     run.sector = opts.debugSector;

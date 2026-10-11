@@ -15,6 +15,7 @@ import { GALAXIES, GALAXY_SECTORS } from '../data/zones.js';
 import { MODIFIERS, DAILY_GOAL, DAILY_REWARD, DIFFICULTIES, DIFFICULTY_IDS, dailyFor } from '../data/modes.js';
 import { nextCost, bossRushUnlocked, maxZone, galaxyUnlocked, nextTreeCost } from '../game/progress.js';
 import { TREES } from '../data/trees.js';
+import { zoneHeadStart } from '../game/run.js';
 
 /** Frase de "próximo objetivo" para motivar la siguiente partida. */
 export function goalText(save) {
@@ -124,7 +125,7 @@ export function renderZonePick(app) {
     <p class="hint">Si empezás más lejos, arrancás con mejoras gratis para estar a la altura.</p><div class="list">`;
   for (let z = 0; z <= top; z++) {
     h += `<button class="row" data-zone="${z}"><div class="info"><h3><span class="swatch" style="background:${ZONES[z].accent}"></span>Zona ${z + 1}: ${esc(ZONES[z].name)}</h3>
-      <p>${esc(ZONES[z].blurb)}</p>${z ? `<p class="trait">Empezás con ${z * 4} mejoras</p>` : ''}</div><span class="mini">Sector ${z * 5 + 1}</span></button>`;
+      <p>${esc(ZONES[z].blurb)}</p>${z ? `<p class="trait">Empezás en el nivel ${1 + zoneHeadStart(z).levels}, con ${zoneHeadStart(z).levels} mejoras y ${zoneHeadStart(z).chests} ${zoneHeadStart(z).chests === 1 ? 'cofre' : 'cofres'}</p>` : ''}</div><span class="mini">Sector ${z * 5 + 1}</span></button>`;
   }
   h += `</div><button class="btn" id="zBack">Volver</button>`;
   s.innerHTML = h;

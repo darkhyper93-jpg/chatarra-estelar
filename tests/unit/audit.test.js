@@ -181,3 +181,30 @@ test('la versión de Ajustes coincide con la de package.json', () => {
   const shown = src.match(/export const VERSION = '([^']+)'/)[1];
   assert.equal(shown, pkg.version, 'actualizá VERSION en js/ui/settings.js y "version" en package.json juntos');
 });
+
+test('empezar en una zona avanzada da lo mismo que llegar jugando', async () => {
+  const { zoneHeadStart } = await import('../../js/game/run.js');
+  const { xpNeed } = await import('../../js/game/stats.js');
+  // Zona 3 (sector 11): quien llega jugando va por el nivel 13 y le ganó a 2 jefes.
+  const h = zoneHeadStart(2);
+  assert.equal(h.levels, 12);
+  assert.equal(h.chests, 2);
+  const run = createRun({ save: defaultSave(), seed: 1, noFx: true, startZone: 2 });
+  assert.equal(run.sector, 11);
+  assert.equal(run.player.level, 13, 'arranca en el nivel que corresponde');
+  assert.equal(run.player.next, xpNeed(13), 'y la experiencia sigue al ritmo de ese nivel');
+  assert.equal(run.pendingLevels, 12 + run.player.stats.startLevels);
+  assert.equal(run.pendingChests, 2, 'un cofre por cada jefe salteado');
+  const fresh = createRun({ save: defaultSave(), seed: 1, noFx: true });
+  assert.equal(fresh.player.level, 1);
+  assert.equal(fresh.pendingChests, 0);
+});
+
+test('el logro Veterano cuenta los niveles subidos en la partida, no los regalados', async () => {
+  const { ACH_BY_ID } = await import('../../js/data/achievements.js');
+  const run = createRun({ save: defaultSave(), seed: 1, noFx: true, startZone: 6 });
+  assert.ok(run.player.level >= 30);
+  assert.equal(ACH_BY_ID.nivel30.cond(defaultSave(), run), false);
+  run.player.level = run.startLevel + 29;
+  assert.equal(ACH_BY_ID.nivel30.cond(defaultSave(), run), true);
+});

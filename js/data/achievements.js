@@ -40,7 +40,7 @@ export const ACHIEVEMENTS = [
   { id: 'intocable',    name: 'Intocable',        desc: 'Completá un sector sin recibir daño.',              reward: 120,  cond: (s, r) => !!r && r.stats.cleanSectors >= 1 },
   { id: 'sinrasguno',   name: 'Sin un rasguño',   desc: 'Vencé a un jefe sin recibir daño.',                 reward: 500,  cond: (s, r) => !!r && r.stats.cleanBosses >= 1 },
   { id: 'velocista',    name: 'Velocista',        desc: 'Vencé a un jefe en menos de 30 segundos.',          reward: 300,  cond: (s, r) => !!r && r.stats.fastestBoss < 30 },
-  { id: 'nivel30',      name: 'Veterano',         desc: 'Llegá al nivel 30 en una partida.',                 reward: 300,  cond: (s, r) => !!r && r.player.level >= 30 },
+  { id: 'nivel30',      name: 'Veterano',         desc: 'Llegá al nivel 30 en una partida.',                 reward: 300,  cond: (s, r) => !!r && r.player.level - (r.startLevel || 1) + 1 >= 30 },
   { id: 'combo100',     name: 'Racha imparable',  desc: 'Hacé una racha de 100 enemigos.',                   reward: 200,  cond: (s, r) => !!r && r.stats.maxCombo >= 100 },
   { id: 'maraton',      name: 'Maratón',          desc: 'Sobreviví 15 minutos en una partida.',              reward: 400,  cond: (s, r) => !!r && r.time >= 900 },
   { id: 'convoy',       name: 'Asaltante',        desc: 'Destruí un convoy de carga.',                       reward: 100,  cond: (s, r) => !!r && r.stats.convoys >= 1 },
