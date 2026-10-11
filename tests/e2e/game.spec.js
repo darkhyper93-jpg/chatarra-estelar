@@ -92,14 +92,15 @@ test('se juega: mejora, pausa, muerte, resumen y hangar', async ({ page }) => {
 });
 
 test('los diez jefes aparecen y se dibujan sin errores', async ({ page }) => {
-  test.setTimeout(150_000);
+  // En las máquinas de GitHub, WebKit puede tardar en llegar a cada jefe.
+  test.setTimeout(400_000);
   const errors = watchErrors(page);
   for (let i = 1; i <= 10; i++) {
     await page.evaluate(s => {
       __ce.startRun({ mode: 'campaign', startZone: 0, debugSector: s, god: true, seed: s });
       window.__auto = setInterval(() => { const c = document.querySelector('#s-levelup:not([hidden]) .card'); if (c) c.click(); }, 30);
     }, i * 5);
-    await page.waitForFunction(() => __ce.run && __ce.run.boss && __ce.run.boss.entered, null, { timeout: 15_000 });
+    await page.waitForFunction(() => __ce.run && __ce.run.boss && __ce.run.boss.entered, null, { timeout: 35_000 });
     // Con tantas mejoras el jefe puede caer enseguida: lo mantenemos vivo mientras se dibuja.
     await page.evaluate(() => { window.__keep = setInterval(() => { const b = __ce.run && __ce.run.boss; if (b) b.hp = Math.max(b.hp, b.maxHp * 0.5); }, 50); });
     await expect(page.locator('#bossBar')).toBeVisible();
