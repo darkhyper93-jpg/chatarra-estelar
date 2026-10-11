@@ -10,6 +10,8 @@ export default defineConfig({
   timeout: 60_000,
   fullyParallel: false,
   workers: 1,
+  // En GitHub, Safari (WebKit) a veces se cierra solo por falta de recursos: un reintento.
+  retries: process.env.CI ? 1 : 0,
   // En GitHub, además, cada falla aparece como anotación en la ejecución.
   reporter: process.env.CI ? [['list'], ['github']] : [['list']],
   use: {
