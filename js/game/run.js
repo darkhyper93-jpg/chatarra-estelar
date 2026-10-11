@@ -20,13 +20,19 @@ import { banner, burst, emit, explode, sfx, shake, updateFx } from './fx.js';
 export const WORLD_W = 400;
 export const STEP = 1 / 60;
 
+/** Experiencia del hangar estándar, con la que se midieron los 6 niveles por zona. */
+const HEAD_XP = 1.18;
+
 /**
  * Lo que recibís al despegar desde una zona avanzada (Mapa estelar): lo mismo
  * que tendría alguien que llegó jugando. Medido con el piloto automático:
- * unos 6 niveles por zona y un cofre por cada jefe salteado.
+ * unos 6 niveles por zona y un cofre por cada jefe salteado. Con más
+ * experiencia se llega con más nivel, pero bastante menos que en proporción
+ * (los niveles cuestan cada vez más): ×1,94 de experiencia da ×1,25 de niveles.
  */
-export function zoneHeadStart(zone) {
-  return { levels: 6 * zone, chests: zone };
+export function zoneHeadStart(zone, xpMul = HEAD_XP) {
+  const levels = Math.round(6 * zone * Math.pow(Math.max(0.5, xpMul) / HEAD_XP, 0.45));
+  return { levels, chests: zone };
 }
 
 /**
@@ -99,7 +105,7 @@ export function createRun(opts) {
   }
   recomputeStats(run);
 
-  const head = zoneHeadStart(startZone);
+  const head = zoneHeadStart(startZone, p.stats.xpMul);
   run.pendingLevels = p.stats.startLevels + head.levels + (mode === 'bossrush' ? 10 : 0);
   run.pendingChests = head.chests;
   // El nivel también avanza, para que la experiencia siga al ritmo de esa zona.

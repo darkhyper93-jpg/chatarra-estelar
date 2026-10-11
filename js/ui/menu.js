@@ -16,6 +16,7 @@ import { MODIFIERS, DAILY_GOAL, DAILY_REWARD, DIFFICULTIES, DIFFICULTY_IDS, dail
 import { nextCost, bossRushUnlocked, maxZone, galaxyUnlocked, nextTreeCost } from '../game/progress.js';
 import { TREES } from '../data/trees.js';
 import { zoneHeadStart } from '../game/run.js';
+import { baseStats } from '../game/stats.js';
 
 /** Frase de "próximo objetivo" para motivar la siguiente partida. */
 export function goalText(save) {
@@ -121,11 +122,14 @@ export function renderZonePick(app) {
   const g = app.save.settings.galaxy || 0, gal = GALAXIES[g];
   const ZONES = gal.zones;
   const top = Math.min(maxZone(app.save, g), ZONES.length - 1);
+  // La experiencia de tu nave, hangar y árbol cambia cuánto recibís al empezar más lejos.
+  const xpMul = baseStats(app.save.ship, app.save.hangar, [], app.save.shipTree[app.save.ship] || {}).xpMul;
+  const head = z => zoneHeadStart(z, xpMul);
   let h = `<p class="eyebrow">Mapa estelar · ${esc(gal.name)}</p><h2>¿Desde dónde despegás?</h2>
     <p class="hint">Si empezás más lejos, arrancás con mejoras gratis para estar a la altura.</p><div class="list">`;
   for (let z = 0; z <= top; z++) {
     h += `<button class="row" data-zone="${z}"><div class="info"><h3><span class="swatch" style="background:${ZONES[z].accent}"></span>Zona ${z + 1}: ${esc(ZONES[z].name)}</h3>
-      <p>${esc(ZONES[z].blurb)}</p>${z ? `<p class="trait">Empezás en el nivel ${1 + zoneHeadStart(z).levels}, con ${zoneHeadStart(z).levels} mejoras y ${zoneHeadStart(z).chests} ${zoneHeadStart(z).chests === 1 ? 'cofre' : 'cofres'}</p>` : ''}</div><span class="mini">Sector ${z * 5 + 1}</span></button>`;
+      <p>${esc(ZONES[z].blurb)}</p>${z ? `<p class="trait">Empezás en el nivel ${1 + head(z).levels}, con ${head(z).levels} mejoras y ${head(z).chests} ${head(z).chests === 1 ? 'cofre' : 'cofres'}</p>` : ''}</div><span class="mini">Sector ${z * 5 + 1}</span></button>`;
   }
   h += `</div><button class="btn" id="zBack">Volver</button>`;
   s.innerHTML = h;

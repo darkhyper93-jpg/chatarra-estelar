@@ -187,9 +187,11 @@ test('empezar en una zona avanzada da lo mismo que llegar jugando', async () => 
   const { xpNeed } = await import('../../js/game/stats.js');
   // Zona 3 (sector 11): quien llega jugando va por el nivel 13 y le ganó a 2 jefes.
   const h = zoneHeadStart(2);
-  assert.equal(h.levels, 12);
+  assert.equal(h.levels, 12, 'con el hangar estándar, 6 niveles por zona');
   assert.equal(h.chests, 2);
-  const run = createRun({ save: defaultSave(), seed: 1, noFx: true, startZone: 2 });
+  const save = defaultSave();
+  save.hangar.ordenador = 3; // la experiencia del hangar estándar (×1,18)
+  const run = createRun({ save, seed: 1, noFx: true, startZone: 2 });
   assert.equal(run.sector, 11);
   assert.equal(run.player.level, 13, 'arranca en el nivel que corresponde');
   assert.equal(run.player.next, xpNeed(13), 'y la experiencia sigue al ritmo de ese nivel');
@@ -198,6 +200,14 @@ test('empezar en una zona avanzada da lo mismo que llegar jugando', async () => 
   const fresh = createRun({ save: defaultSave(), seed: 1, noFx: true });
   assert.equal(fresh.player.level, 1);
   assert.equal(fresh.pendingChests, 0);
+});
+
+test('con más experiencia se empieza con más nivel, pero sin romper el juego', async () => {
+  const { zoneHeadStart } = await import('../../js/game/run.js');
+  // Medido: ×1,94 de experiencia llega al sector 11 con unos 16 niveles en vez de 12.
+  assert.equal(zoneHeadStart(2, 1.94).levels, 15);
+  assert.ok(zoneHeadStart(2, 1).levels < 12, 'sin bonificación, algo menos');
+  assert.ok(zoneHeadStart(9, 2.5).levels <= 6 * 9 * 1.5, 'nunca más de un 50% extra');
 });
 
 test('el logro Veterano cuenta los niveles subidos en la partida, no los regalados', async () => {
