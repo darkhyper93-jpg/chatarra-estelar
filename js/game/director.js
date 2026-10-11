@@ -43,7 +43,7 @@ export function nextSector(run) {
   run.bossSpawned = false;
   run.bossDone = false;
   run.eventDone = false;
-  run.eventAt = run.rng.range(7, 17);
+  run.eventAt = run.rng.range(0.23, 0.57) * SECTOR_SECONDS;
   run.spawnT = 1;
   run.score += 100 * (run.sector - 1);
   setDifficulty(run);

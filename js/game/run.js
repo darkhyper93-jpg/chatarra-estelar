@@ -8,7 +8,7 @@ import { clamp, compact, hasOwn } from '../core/util.js';
 import { SHIPS } from '../data/ships.js';
 import { WEAPON_IDS } from '../data/weapons.js';
 import { mergeFlags, DIFFICULTIES, DAILY_HANGAR } from '../data/modes.js';
-import { GALAXIES, firstSectorOfZone, zoneOf } from '../data/zones.js';
+import { GALAXIES, firstSectorOfZone, zoneOf, SECTOR_SECONDS } from '../data/zones.js';
 import { recomputeStats, xpNeed } from './stats.js';
 import { setDifficulty, updateDirector } from './director.js';
 import { spawnEnemy, updateEnemies } from './enemies.js';
@@ -120,7 +120,7 @@ export function createRun(opts) {
     run.pendingLevels += Math.floor((opts.debugSector - 1) * 1.4);
   }
   setDifficulty(run);
-  run.eventAt = run.rng.range(7, 17);
+  run.eventAt = run.rng.range(0.23, 0.57) * SECTOR_SECONDS;
   if (mode === 'bossrush') run.rushIndex = null;
   else banner(run, galaxy ? GALAXIES[galaxy].name.toUpperCase() : 'SECTOR ' + run.sector, galaxy ? 'Sector ' + run.sector + ' · ' + zoneOf(run.sector, galaxy).name : zoneOf(run.sector, galaxy).name, 2.6);
   sfx(run, 'sector');

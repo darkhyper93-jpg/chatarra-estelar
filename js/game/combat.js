@@ -3,6 +3,7 @@
  * botín que sueltan los enemigos y cómo se recoge.
  */
 import { ENEMIES, NEUTRAL } from '../data/enemies.js';
+import { PACE } from '../data/zones.js';
 import { clamp, segDist2, TAU } from '../core/util.js';
 import { burst, emit, explode, ring, sfx, text, shake, banner } from './fx.js';
 import { xpMul } from './stats.js';
@@ -80,16 +81,16 @@ export function killEnemy(run, e) {
     if (p.combo > run.stats.maxCombo) run.stats.maxCombo = p.combo;
   }
   const luck = p.stats.luck;
-  const xp = def.xp * xpMul(run.sector) * run.flags.xp * (e.elite ? 5 : 1);
+  const xp = def.xp * xpMul(run.sector) * run.flags.xp * (e.elite ? 5 : 1) * PACE;
   if (xp > 0) dropXP(run, e.x, e.y, xp);
   const scrapChance = (e.type === 'asteroide' ? 0.15 : 0.045) + luck * 0.04 + (e.type === 'tanque' ? 0.25 : 0);
-  if (run.rng.chance(scrapChance)) drop(run, e.x, e.y, 'scrap', run.rng.range(1, 2) * (1 + run.sector * 0.02));
+  if (run.rng.chance(scrapChance)) drop(run, e.x, e.y, 'scrap', run.rng.range(1, 2) * (1 + run.sector * 0.02) * PACE);
   if (!run.flags.noHeal && run.rng.chance(0.012 + (e.type === 'tanque' ? 0.08 : 0))) drop(run, e.x, e.y, 'heal', 0.25);
   if (run.rng.chance(0.004 + luck * 0.003)) drop(run, e.x, e.y, 'magnet', 0);
   if (run.rng.chance(0.003 + luck * 0.002)) drop(run, e.x, e.y, 'bomb', 0);
   if (e.elite) {
     drop(run, e.x, e.y, 'chest', 0);
-    for (let i = 0; i < 2; i++) drop(run, e.x, e.y, 'scrap', 1 + run.sector * 0.1);
+    for (let i = 0; i < 2; i++) drop(run, e.x, e.y, 'scrap', (1 + run.sector * 0.1) * PACE);
   }
   switch (e.type) {
     case 'tanque':

@@ -26,7 +26,7 @@ Queda un ícono como cualquier otra app; se abre en pantalla completa.
 
 - El juego tiene **10 galaxias**. Cada una tiene **10 zonas de 5 sectores** (50 sectores) y **10 jefes**. Al vencer al jefe de la zona 10 completás la galaxia y se abre la siguiente, que es más difícil y da más chatarra.
 - Cada galaxia completada da **poder galáctico** para siempre: +85% de daño y +35% de casco.
-- Cada **sector** dura 30 segundos. Cada 5 sectores aparece un **jefe**. Desde la galaxia 2 los jefes vuelven en versiones más fuertes (Prime, Omega, Esmeralda, Solar…): más balas, más rápidos y con una fase de furia al final.
+- Cada **sector** dura 18 segundos y cada 5 sectores aparece un **jefe** (poco más de un minuto entre jefes). Los enemigos dan experiencia y chatarra acorde al ritmo. Desde la galaxia 2 los jefes vuelven en versiones más fuertes (Prime, Omega, Esmeralda, Solar…): más balas, más rápidos y con una fase de furia al final.
 - Los jefes pegan muy fuerte: hay que esquivar. Los láseres que te apuntan se ponen **blancos** medio segundo antes de disparar: ahí es cuando tenés que correrte.
 - Los enemigos sueltan **cristales de experiencia**. Al subir de nivel elegís una mejora entre 3 (o 4) cartas.
 - Podés llevar hasta **4 armas** y **5 piezas pasivas**. Cada arma sube hasta el nivel 7.

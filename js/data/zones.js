@@ -9,7 +9,14 @@
  */
 
 export const SECTORS_PER_ZONE = 5;
-export const SECTOR_SECONDS = 30;
+// Cada sector dura 18 s (antes 30): menos espera entre jefes. Para llegar a
+// cada jefe con el mismo nivel y la misma chatarra, los enemigos comunes dan
+// más experiencia y chatarra en la misma proporción (PACE). La dificultad
+// no cambia: la vida y el daño enemigos dependen del número de sector.
+export const SECTOR_SECONDS = 18;
+// ×1,11 extra: cada sector arranca con pocos enemigos, y con sectores más cortos
+// ese arranque pesa más (medido con el piloto automático).
+export const PACE = (30 / SECTOR_SECONDS) * 1.11;
 export const ZONES_PER_GALAXY = 10;
 export const GALAXY_SECTORS = SECTORS_PER_ZONE * ZONES_PER_GALAXY;
 
